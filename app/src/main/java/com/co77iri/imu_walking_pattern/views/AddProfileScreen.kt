@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.models.ProfileData
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 import java.text.SimpleDateFormat
@@ -84,7 +85,7 @@ fun AddProfileScreen(
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,
                                 contentDescription = "뒤로가기",
@@ -239,7 +240,7 @@ fun AddProfileScreen(
 
                         profileViewModel.saveProfile(context, newProfile) // 작성된 내용대로 프로필 생성
                         profileViewModel.loadProfiles(context)            // 안드로이드 내부 저장소에서 프로필 로드
-                        navController.navigate("profile")           // 다시 프로필 페이지로 전환
+                        navController.navigate(PROFILE)           // 다시 프로필 페이지로 전환
                     }
 
             ) {

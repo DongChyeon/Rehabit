@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.utils
+package com.co77iri.imu_walking_pattern.ui.component
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons

@@ -29,7 +29,7 @@ import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import com.co77iri.imu_walking_pattern.utils.FilePickerDialog
+import com.co77iri.imu_walking_pattern.ui.component.FilePickerDialog
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel_old
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 enum class TestStep {

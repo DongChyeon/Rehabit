@@ -149,7 +149,7 @@ fun tmpCard2(
 //                        .height(80.dp)
             .clickable {
 //                showDialog = true
-//                navController.navigate("csv_result")
+//                navController.navigate(CSV_RESULT)
             }
 
     ) {
@@ -207,7 +207,7 @@ fun tmpCard3(
 //                        .height(80.dp)
             .clickable {
 //                showDialog = true
-//                navController.navigate("csv_result")
+//                navController.navigate(CSV_RESULT)
             }
 
     ) {

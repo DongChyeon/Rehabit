@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.utils
+package com.co77iri.imu_walking_pattern.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.models.ProfileData
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 
@@ -33,7 +32,7 @@ import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 fun ProfileCard(
     user: ProfileData,
     profileViewModel: ProfileViewModel,
-    navController: NavController
+    navigateToMenuSelect: () -> Unit
 ) {
     // profile
     Card(
@@ -41,13 +40,10 @@ fun ProfileCard(
             containerColor = Color(0xFFE2E2E2)
         ),
         modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(80.dp)
             .clickable {
-//                showDialog = true
                 // 클릭한 카드의 프로필을 profile ViewModel의 selectedProfile에 저장
                 profileViewModel.selectedProfile = user
-                navController.navigate("menu_select")
+                navigateToMenuSelect()
             }
 
     ) {
@@ -75,11 +71,9 @@ fun ProfileCard(
                 )
             }
             Column(
-//                            horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-//                    text = "홍길동 | 만 35세",
                     text = user.name + user.birthDate,
                     fontSize = 18.sp,
                     modifier = Modifier

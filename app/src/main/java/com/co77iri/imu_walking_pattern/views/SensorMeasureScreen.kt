@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.CSV_RESULT
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.github.mikephil.charting.charts.LineChart
@@ -92,7 +94,7 @@ fun SensorMeasureScreen(
                 navigationIcon = {
                     IconButton(onClick = {
                         if( !sensorViewModel.isMeasuring.value ) {
-                            navController.navigate("profile")
+                            navController.navigate(PROFILE)
                         }
 //                        navController.popBackStack()
                     }) {
@@ -170,7 +172,7 @@ fun SensorMeasureScreen(
                             // TODO 다음 화면으로 넘어가기
                             resultViewModel.updateCSVDataFromFile(sensorViewModel.leftSensorFileName!!)
                             resultViewModel.updateCSVDataFromFile(sensorViewModel.rightSensorFileName!!)
-                            navController.navigate("csv_result")
+                            navController.navigate(CSV_RESULT)
                         }
                         .padding(horizontal = 20.dp),
 

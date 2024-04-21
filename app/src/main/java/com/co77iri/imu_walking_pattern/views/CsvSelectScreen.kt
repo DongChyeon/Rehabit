@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.CSV_RESULT
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -134,7 +135,7 @@ fun ResultCard(
                 resultViewModel.updateCSVDataFromFile(session.leftFile.path)
                 resultViewModel.updateCSVDataFromFile(session.rightFile.path)
 
-                navController.navigate("csv_result")
+                navController.navigate(CSV_RESULT)
             }
 
     ) {

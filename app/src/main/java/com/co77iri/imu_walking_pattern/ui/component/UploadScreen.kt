@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.utils
+package com.co77iri.imu_walking_pattern.ui.component
 
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

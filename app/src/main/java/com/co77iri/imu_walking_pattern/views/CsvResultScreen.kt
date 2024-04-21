@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.interfaces.JsonUploadService
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.models.UploadJsonData
@@ -141,7 +142,7 @@ fun CsvResultScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate("menu_select") }) {
+                    IconButton(onClick = { navController.navigate(MENU_SELECT) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "뒤로가기",

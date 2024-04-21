@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.CSV_RESULT
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,7 +115,7 @@ fun CustomResultScreenCard(
 //                        .height(80.dp)
             .clickable {
 //                showDialog = true
-                navController.navigate("csv_result")
+                navController.navigate(CSV_RESULT)
             }
 
     ) {

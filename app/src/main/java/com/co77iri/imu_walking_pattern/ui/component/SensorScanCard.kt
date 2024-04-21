@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.utils
+package com.co77iri.imu_walking_pattern.ui.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

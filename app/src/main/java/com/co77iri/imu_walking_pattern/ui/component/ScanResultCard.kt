@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.utils
+package com.co77iri.imu_walking_pattern.ui.component
 
 import android.bluetooth.BluetoothDevice
 import androidx.compose.foundation.clickable

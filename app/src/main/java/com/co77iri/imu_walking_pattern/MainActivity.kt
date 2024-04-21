@@ -19,10 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.co77iri.imu_walking_pattern.utils.Utils.isBluetoothAdapterEnabled
-import com.co77iri.imu_walking_pattern.utils.Utils.isLocationPermissionGranted
-import com.co77iri.imu_walking_pattern.utils.Utils.requestEnableBluetooth
-import com.co77iri.imu_walking_pattern.utils.Utils.requestLocationPermission
+import com.co77iri.imu_walking_pattern.Utils.isBluetoothAdapterEnabled
+import com.co77iri.imu_walking_pattern.Utils.isLocationPermissionGranted
+import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
+import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
 import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
@@ -167,23 +167,23 @@ fun AppNavigator(context: Context, bluetoothViewModel: BluetoothViewModel,
                  profileViewModel: ProfileViewModel
 ) {
     val navController = rememberNavController()
-    NavHost(navController, startDestination = "profile") { // 테스트
+    NavHost(navController, startDestination = PROFILE) { // 테스트
 //    NavHost(navController, startDestination = "csv_select") { // 테스트
-        composable("profile") { ProfileScreen(navController, profileViewModel) } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
-        composable("add_profile") { AddProfileScreen(context, navController, profileViewModel) } // 프로필 추가 페이지
-        composable("menu_select") { MenuSelectScreen(navController, profileViewModel) } //
-        composable("csv_select") { CsvSelectScreen(navController, resultViewModel) }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
-        composable("old_csv_select") { OldCsvSelectScreen(navController) } // 검사결과보기 페이지 -> csv 선택하는 화면
+        composable(PROFILE) { ProfileScreen(navController, profileViewModel) } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
+        composable(ADD_PROFILE) { AddProfileScreen(context, navController, profileViewModel) } // 프로필 추가 페이지
+        composable(MENU_SELECT) { MenuSelectScreen(navController, profileViewModel) } //
+        composable(CSV_SELECT) { CsvSelectScreen(navController, resultViewModel) }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
+        composable(OLD_CSV_SELECT) { OldCsvSelectScreen(navController) } // 검사결과보기 페이지 -> csv 선택하는 화면
         /* Todo - CsvSelectScreen
             내부 저장소에서 결과 csv 스캔 후 카드 모양으로 불러오기
             → 추후에 측정 결과 저장할 때 파일 이름 지을 수 있도록 ViewModel 함수 변경
          */
-        composable("csv_result") { CsvResultScreen(context, navController, resultViewModel, profileViewModel) } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
+        composable(CSV_RESULT) { CsvResultScreen(context, navController, resultViewModel, profileViewModel) } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
         /* Todo - CsvResultScreen
             결과 볼때 ViewModel에서 정보 추출하는것 만들기
          */
-        composable("sensor_setting") { SensorSettingScreen(navController, bluetoothViewModel, sensorViewModel) } // 센서 연결 및 이름 선택
-        composable("sensor_sync") { SensorSyncScreen(navController, sensorViewModel) }       // 센서 싱크 (100% 되면 자동으로 sensor_measure 페이지로 이동
-        composable("sensor_measure") { SensorMeasureScreen(navController, sensorViewModel, resultViewModel) } //
+        composable(SENSOR_SETTING) { SensorSettingScreen(navController, bluetoothViewModel, sensorViewModel) } // 센서 연결 및 이름 선택
+        composable(SENSOR_SYNC) { SensorSyncScreen(navController, sensorViewModel) }       // 센서 싱크 (100% 되면 자동으로 sensor_measure 페이지로 이동
+        composable(SENSOR_MEASURE) { SensorMeasureScreen(navController, sensorViewModel, resultViewModel) } //
     }
 }

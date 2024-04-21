@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,12 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -25,8 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -44,9 +37,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.utils.ConnectedDeviceCard
-import com.co77iri.imu_walking_pattern.utils.ScanResultCard
-import com.co77iri.imu_walking_pattern.utils.SensorScanCard
+import com.co77iri.imu_walking_pattern.SENSOR_SYNC
+import com.co77iri.imu_walking_pattern.ui.component.ConnectedDeviceCard
+import com.co77iri.imu_walking_pattern.ui.component.ScanResultCard
+import com.co77iri.imu_walking_pattern.ui.component.SensorScanCard
 import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
@@ -114,7 +108,7 @@ fun SensorSettingScreen(
                                        ArrayList(sensorViewModel.sensorList)
 
                                    sensorViewModel.startSync(connSensors)
-                                   navController.navigate("sensor_sync")
+                                   navController.navigate(SENSOR_SYNC)
                                }
                     },
                 ) {

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.SENSOR_MEASURE
 import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +84,7 @@ fun SensorSyncScreen(
 
     LaunchedEffect(sensorViewModel.syncStatus.value) {
         if (sensorViewModel.syncStatus.value >= 2) {
-            navController.navigate("sensor_measure")
+            navController.navigate(SENSOR_MEASURE)
         }
     }
 }

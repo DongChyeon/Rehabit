@@ -2,6 +2,8 @@ package com.co77iri.imu_walking_pattern.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Card
@@ -23,56 +27,46 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.utils.ProfileCard
+import com.co77iri.imu_walking_pattern.ADD_PROFILE
+import com.co77iri.imu_walking_pattern.MENU_SELECT
+import com.co77iri.imu_walking_pattern.ui.component.ProfileCard
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun ProfileScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
 
-    var showDialog by remember { mutableStateOf(false) }
-
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-                CenterAlignedTopAppBar (
-                    title = {
-                        Text(
-                            "PROFILE",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp
-                        )
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
-
-                )
-            },
-        ) { innerPadding ->
-        Column(
+            CenterAlignedTopAppBar (
+                title = {
+                    Text(
+                        "PROFILE",
+                        color = White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
+            )
+        },
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .background(
                     color = Color(0xFFF3F3F3)
@@ -80,25 +74,30 @@ fun ProfileScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 20.dp)
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 100.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp))
-            {
-                // 기존의 Card() 이 부분을 따로 Composable로 작성하였음.
-                // utils/ProfileCard.kt
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 profileViewModel.profiles.forEach { profile ->
-                    ProfileCard(profile, profileViewModel, navController)
+                    ProfileCard(
+                        user = profile,
+                        profileViewModel = profileViewModel,
+                        navigateToMenuSelect = {
+                            navController.navigate(MENU_SELECT)
+                        }
+                    )
                 }
             }
-            AddProfileCard(navController)
-        }
 
-        if( showDialog ) {
-            Dialog( onDismissRequest = { showDialog = false } ) {
-                Text("Hello")
+            AddProfileCard(
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                navController.navigate(ADD_PROFILE)
             }
         }
     }
@@ -106,21 +105,20 @@ fun ProfileScreen(
 
 @Composable
 fun AddProfileCard(
-    navController: NavController
+    modifier: Modifier = Modifier,
+    navigateToAddProfile: () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF424651)
         ),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(80.dp)
             .clickable {
-//                        showDialog = true
-                       navController.navigate("add_profile")
+                navigateToAddProfile()
             },
-
-        ) {
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxSize(),

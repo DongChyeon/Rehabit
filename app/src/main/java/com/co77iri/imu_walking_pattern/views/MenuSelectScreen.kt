@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.CSV_SELECT
+import com.co77iri.imu_walking_pattern.SENSOR_SETTING
 import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,12 +176,12 @@ fun MenuSelectScreen(
                 MenuSelectCustomBtn(
                     btnText = "검사 결과 보기",
                     navController = navController,
-                    navDestination = "csv_select"
+                    navDestination = CSV_SELECT
                 )
                 MenuSelectCustomBtn(
                     btnText = "보행 검사 시작",
                     navController = navController,
-                    navDestination = "sensor_setting"
+                    navDestination = SENSOR_SETTING
                 )
             }
 

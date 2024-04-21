@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.utils.CustomTopAppBar
+import com.co77iri.imu_walking_pattern.ui.component.CustomTopAppBar
 import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
 
@@ -45,7 +45,7 @@ fun OldSensorSettingScreen (
     var isSyncing by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { CustomTopAppBar(titleText = "센서 설정", navController = navController)},
+        topBar = { CustomTopAppBar(titleText = "센서 설정", navController = navController) },
         bottomBar = {
             // 왼발 오른발 센서가 모두 선택되면, BottomBar에 Sync 시작 버튼 나오게 하기
             if( sensorViewModel.leftSensor != null && sensorViewModel.rightSensor != null ) {
