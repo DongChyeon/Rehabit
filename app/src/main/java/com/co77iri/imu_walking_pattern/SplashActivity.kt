@@ -41,21 +41,21 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SplashScreenContent()
+
+            val context = LocalContext.current
+
+            LaunchedEffect(true) {
+                delay(500)
+                startActivity(context, Intent(context, MainActivity::class.java), null)
+            }
         }
     }
 }
 
 @Composable
 fun SplashScreenContent() {
-    val context = LocalContext.current
     val backgroundImage = painterResource(id = R.drawable.splash_background)
     val logoImage = painterResource(id = R.drawable.logo)
-
-    LaunchedEffect(key1 = true, block = {
-//        delay(2000)
-        delay(500)
-        startActivity(context, Intent(context, MainActivity::class.java), null)
-    })
 
     Box(
         modifier = Modifier.fillMaxSize(),

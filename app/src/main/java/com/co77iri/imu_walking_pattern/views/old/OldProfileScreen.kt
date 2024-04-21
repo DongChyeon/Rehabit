@@ -63,9 +63,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.R
 import com.co77iri.imu_walking_pattern.models.ProfileData
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
 import com.co77iri.imu_walking_pattern.ui.theme.PrimaryBlue
 import com.co77iri.imu_walking_pattern.ui.theme.SecondaryGray
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -74,7 +75,7 @@ import java.util.Date
 fun OldProfileScreen(
     context: Context,
     navController: NavController,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileLegacyViewModel
     ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
     var showDialog by remember { mutableStateOf(false) }
@@ -206,7 +207,7 @@ fun OldProfileScreen(
 @Composable
 fun customProfileCard(
     user: ProfileData,
-    profileViewModel: ProfileViewModel,
+    profileViewModel: ProfileLegacyViewModel,
     navController: NavController
 ) {
     val profileIcon = painterResource(id = R.drawable.icon_profile_user)
@@ -271,7 +272,7 @@ fun customProfileCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectDialog(
-    profileViewModel: ProfileViewModel,
+    profileViewModel: ProfileLegacyViewModel,
     navController: NavController,
     onClose: () -> Unit
 ) {
@@ -362,7 +363,7 @@ fun SelectDialog(
 @Composable
 fun ProfileCreateDialog(
     context: Context,
-    profileViewModel: ProfileViewModel,
+    profileViewModel: ProfileLegacyViewModel,
     showDialog: Boolean,
     onClose: () -> Unit
 ) {

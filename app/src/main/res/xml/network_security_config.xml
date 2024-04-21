@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">co77iri.com</domain>
+        <domain includeSubdomains="true">13.125.247.209</domain>
     </domain-config>
 </network-security-config>

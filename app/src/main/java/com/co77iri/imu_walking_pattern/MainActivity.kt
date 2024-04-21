@@ -16,6 +16,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,12 +27,13 @@ import com.co77iri.imu_walking_pattern.Utils.isLocationPermissionGranted
 import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
 import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
 import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.co77iri.imu_walking_pattern.views.MenuSelectScreen
-import com.co77iri.imu_walking_pattern.views.ProfileScreen
-import com.co77iri.imu_walking_pattern.views.AddProfileScreen
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileScreen
+import com.co77iri.imu_walking_pattern.ui.profile.AddProfileScreen
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
 import com.co77iri.imu_walking_pattern.views.OldCsvSelectScreen
 import com.co77iri.imu_walking_pattern.views.CsvResultScreen
 import com.co77iri.imu_walking_pattern.views.CsvSelectScreen
@@ -37,6 +41,7 @@ import com.co77iri.imu_walking_pattern.views.SensorSettingScreen
 import com.co77iri.imu_walking_pattern.views.SensorMeasureScreen
 import com.co77iri.imu_walking_pattern.views.SensorSyncScreen
 import com.xsens.dot.android.sdk.XsensDotSdk
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -44,12 +49,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val bluetoothViewModel: BluetoothViewModel by viewModels()
+    private val profileLegacyViewModel: ProfileLegacyViewModel by viewModels()
     private val sensorViewModel: SensorViewModel by viewModels()
     private val resultViewModel: ResultViewModel by viewModels()
 //    private val profileViewModelOld: ProfileViewModel_old by viewModels()
-    private val profileViewModel: ProfileViewModel by viewModels()
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,9 +63,6 @@ class MainActivity : ComponentActivity() {
 
         GlobalScope.launch(Dispatchers.IO) {
             createDirectory()
-            profileViewModel.loadProfiles(this@MainActivity)
-            delay(100)
-//            profileViewModelOld.scanProfilesDirectory(filesDir)
         }
 
         checkBluetoothAndPermission()
@@ -69,12 +72,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                AppNavigator(
-                    this@MainActivity,
-                    bluetoothViewModel,
-                    sensorViewModel,
-                    resultViewModel,
-                    profileViewModel
+                NavHost(
+                    profileLegacyViewModel = profileLegacyViewModel,
+                    bluetoothViewModel = bluetoothViewModel,
+                    sensorViewModel = sensorViewModel,
+                    resultViewModel = resultViewModel
                 )
             }
         }
@@ -162,28 +164,59 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigator(context: Context, bluetoothViewModel: BluetoothViewModel,
-                 sensorViewModel: SensorViewModel, resultViewModel: ResultViewModel,
-                 profileViewModel: ProfileViewModel
+fun NavHost(
+    profileLegacyViewModel: ProfileLegacyViewModel,
+    bluetoothViewModel: BluetoothViewModel,
+    sensorViewModel: SensorViewModel,
+    resultViewModel: ResultViewModel
 ) {
+    val context = LocalContext.current
+
     val navController = rememberNavController()
+
     NavHost(navController, startDestination = PROFILE) { // 테스트
 //    NavHost(navController, startDestination = "csv_select") { // 테스트
-        composable(PROFILE) { ProfileScreen(navController, profileViewModel) } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
-        composable(ADD_PROFILE) { AddProfileScreen(context, navController, profileViewModel) } // 프로필 추가 페이지
-        composable(MENU_SELECT) { MenuSelectScreen(navController, profileViewModel) } //
-        composable(CSV_SELECT) { CsvSelectScreen(navController, resultViewModel) }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
-        composable(OLD_CSV_SELECT) { OldCsvSelectScreen(navController) } // 검사결과보기 페이지 -> csv 선택하는 화면
+        composable(PROFILE) {
+            val profileViewModel: ProfileViewModel = hiltViewModel()
+            ProfileScreen(navController, profileViewModel)
+        } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
+
+        composable(ADD_PROFILE) {
+            AddProfileScreen(context, navController, profileLegacyViewModel)
+        } // 프로필 추가 페이지
+
+        composable(MENU_SELECT) {
+            MenuSelectScreen(navController, profileLegacyViewModel)
+        } //
+
+        composable(CSV_SELECT) {
+            CsvSelectScreen(navController, resultViewModel)
+        }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
+
+        composable(OLD_CSV_SELECT) {
+            OldCsvSelectScreen(navController)
+        } // 검사결과보기 페이지 -> csv 선택하는 화면
         /* Todo - CsvSelectScreen
             내부 저장소에서 결과 csv 스캔 후 카드 모양으로 불러오기
             → 추후에 측정 결과 저장할 때 파일 이름 지을 수 있도록 ViewModel 함수 변경
          */
-        composable(CSV_RESULT) { CsvResultScreen(context, navController, resultViewModel, profileViewModel) } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
+        composable(CSV_RESULT) {
+            CsvResultScreen(context, navController, resultViewModel, profileLegacyViewModel)
+        } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
         /* Todo - CsvResultScreen
             결과 볼때 ViewModel에서 정보 추출하는것 만들기
          */
-        composable(SENSOR_SETTING) { SensorSettingScreen(navController, bluetoothViewModel, sensorViewModel) } // 센서 연결 및 이름 선택
-        composable(SENSOR_SYNC) { SensorSyncScreen(navController, sensorViewModel) }       // 센서 싱크 (100% 되면 자동으로 sensor_measure 페이지로 이동
-        composable(SENSOR_MEASURE) { SensorMeasureScreen(navController, sensorViewModel, resultViewModel) } //
+
+        composable(SENSOR_SETTING) {
+            SensorSettingScreen(navController, bluetoothViewModel, sensorViewModel)
+        } // 센서 연결 및 이름 선택
+
+        composable(SENSOR_SYNC) {
+            SensorSyncScreen(navController, sensorViewModel)
+        }       // 센서 싱크 (100% 되면 자동으로 sensor_measure 페이지로 이동
+
+        composable(SENSOR_MEASURE) {
+            SensorMeasureScreen(navController, sensorViewModel, resultViewModel)
+        } //
     }
 }

@@ -26,12 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.co77iri.imu_walking_pattern.models.ProfileData
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
+import com.co77iri.imu_walking_pattern.network.models.response.ClinicalPatient
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 
 @Composable
 fun ProfileCard(
-    user: ProfileData,
-    profileViewModel: ProfileViewModel,
+    user: ClinicalPatient,
+    selectProfile: (ClinicalPatient) -> Unit,
     navigateToMenuSelect: () -> Unit
 ) {
     // profile
@@ -42,7 +43,7 @@ fun ProfileCard(
         modifier = Modifier
             .clickable {
                 // 클릭한 카드의 프로필을 profile ViewModel의 selectedProfile에 저장
-                profileViewModel.selectedProfile = user
+                selectProfile(user)
                 navigateToMenuSelect()
             }
 
@@ -74,14 +75,14 @@ fun ProfileCard(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = user.name + user.birthDate,
+                    text = user.emrPatientNumber,
                     fontSize = 18.sp,
                     modifier = Modifier
                         .padding(start = 18.dp),
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = user.hospital + "병원",
+                    text = user.birthYear,
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(start = 18.dp)

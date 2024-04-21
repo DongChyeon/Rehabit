@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.viewmodels
+package com.co77iri.imu_walking_pattern.ui.profile
 
 import android.content.Context
 import android.util.Log
@@ -12,7 +12,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class ProfileViewModel: ViewModel() {
+class ProfileLegacyViewModel: ViewModel() {
     var profiles by mutableStateOf(listOf<ProfileData>())
     var selectedProfile by mutableStateOf<ProfileData?>(null)
 //        private set

@@ -2,7 +2,6 @@
 
 package com.co77iri.imu_walking_pattern.views
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
@@ -10,10 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -50,13 +46,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.interfaces.JsonUploadService
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.models.UploadJsonData
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
+import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -64,7 +60,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
@@ -73,9 +68,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +76,7 @@ fun CsvResultScreen(
     context: Context,
     navController: NavController,
     resultViewModel: ResultViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileLegacyViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
     var showDialog by remember { mutableStateOf(false) }

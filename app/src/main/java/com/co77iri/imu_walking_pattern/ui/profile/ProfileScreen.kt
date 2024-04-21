@@ -1,9 +1,7 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +11,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,22 +39,63 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.co77iri.imu_walking_pattern.ADD_PROFILE
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.ui.component.ProfileCard
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
+import com.co77iri.imu_walking_pattern.ui.component.SnackBar
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    profileViewModel: ProfileViewModel
+    viewModel: ProfileViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val effectFlow = viewModel.effect
+
+    val profiles = uiState.profiles.collectAsLazyPagingItems()
+    val profilesRefreshState = profiles.loadState.refresh
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
+
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = scaffoldState.snackbarHostState
+
+    LaunchedEffect(profilesRefreshState) {
+        if (profilesRefreshState is LoadState.Error) {
+            val errorMessage = profilesRefreshState.error.message ?: "네트워크 오류가 발생했습니다."
+            showSnackBar(snackbarHostState, errorMessage)
+        }
+    }
+
+    LaunchedEffect(true) {
+        viewModel.getProfiles()
+
+        effectFlow.collectLatest { effect ->
+            when (effect) {
+                is ProfileContract.Effect.NavigateTo -> {
+                    navController.navigate(effect.destination, effect.navOptions)
+                }
+
+                is ProfileContract.Effect.ShowSnackBar -> {
+                    showSnackBar(snackbarHostState, effect.message)
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackBar(snackbarHostState)
+        },
         topBar = {
             CenterAlignedTopAppBar (
                 title = {
@@ -75,22 +120,29 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp, vertical = 20.dp)
                 .fillMaxSize(),
         ) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
                     .padding(bottom = 100.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                profileViewModel.profiles.forEach { profile ->
-                    ProfileCard(
-                        user = profile,
-                        profileViewModel = profileViewModel,
-                        navigateToMenuSelect = {
-                            navController.navigate(MENU_SELECT)
-                        }
-                    )
+                items(
+                    count = profiles.itemCount,
+                    key = profiles.itemKey(),
+                    contentType = profiles.itemContentType()
+                ) { index ->
+                    profiles[index]?.let {
+                        ProfileCard(
+                            user = it,
+                            selectProfile = { profile ->
+                                viewModel.updateSelectedProfile(profile)
+                            },
+                            navigateToMenuSelect = {
+                                navController.navigate(MENU_SELECT)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -146,4 +198,11 @@ fun AddProfileCard(
             )
         }
     }
+}
+
+suspend fun showSnackBar(
+    snackbarHostState: androidx.compose.material.SnackbarHostState,
+    message: String
+) {
+    snackbarHostState.showSnackbar(message)
 }

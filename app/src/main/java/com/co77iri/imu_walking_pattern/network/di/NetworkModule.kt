@@ -28,8 +28,6 @@ object NetworkModule {
         @ApplicationContext context: Context
     ): OkHttpClient =
         OkHttpClient.Builder()
-            .readTimeout(5000, TimeUnit.MILLISECONDS)
-            .connectTimeout(5000, TimeUnit.MILLISECONDS)
             .addNetworkInterceptor(
                 HttpLoggingInterceptor()
                     .apply {

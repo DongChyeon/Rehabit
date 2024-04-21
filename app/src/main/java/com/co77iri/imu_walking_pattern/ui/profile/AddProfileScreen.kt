@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.profile
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.models.ProfileData
-import com.co77iri.imu_walking_pattern.viewmodels.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -60,7 +59,7 @@ import java.util.Date
 fun AddProfileScreen(
     context: Context,
     navController: NavController,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileLegacyViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
 

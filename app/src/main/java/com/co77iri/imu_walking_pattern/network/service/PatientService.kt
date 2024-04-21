@@ -20,7 +20,7 @@ import retrofit2.http.Query
 interface PatientService {
 
     @Multipart
-    @POST("v1/clinicialpatients/{patientId}/parkinsontestdatas")
+    @POST("v1/clinicalpatients/{patientId}/parkinsontestdatas")
     suspend fun postParkinsonTestData(
         @Path("patientId") patientId: Int,
         @Part("jsonData") jsonData: RequestBody,
@@ -28,19 +28,19 @@ interface PatientService {
         @Part csvFileRight: MultipartBody.Part
     ): ApiResult<BaseReponse>
 
-    @GET("v1/clinicialpatients/{patientId}/parkinsontestdatas")
+    @GET("v1/clinicalpatients/{patientId}/parkinsontestdatas")
     suspend fun getParkinsonTestDataList(
         @Path("patientId") patientId: Int,
         @Query("pageNumber") pageNumber: Int,
         @Query("pageSize") pageSize: Int = 10
     ): ApiResult<ParkinsonTestDataListResponse>
 
-    @POST("v1/clinicialpatients")
+    @POST("v1/clinicalpatients")
     suspend fun postClinicalPatient(
         @Body postClinicalPatientRequest: PostClinicalPatientRequest
     ): ApiResult<BaseReponse>
 
-    @GET("v1/clinicialpatients")
+    @GET("v1/clinicalpatients")
     suspend fun getClinicalPatientList(
         @Query("pageNumber") pageNumber: Int,
         @Query("pageSize") pageSize: Int = 10
