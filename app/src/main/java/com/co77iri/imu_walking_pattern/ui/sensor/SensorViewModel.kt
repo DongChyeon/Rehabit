@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.viewmodels
+package com.co77iri.imu_walking_pattern.ui.sensor
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -26,8 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 

@@ -23,8 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.BluetoothViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
 import androidx.compose.material3.TextField
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
@@ -32,11 +32,11 @@ import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreen(
-        context: Context,
-        navController: NavController,
-        btViewModel: BluetoothViewModel,
-        sensorViewModel: SensorViewModel,
-        resultViewModel: ResultViewModel
+    context: Context,
+    navController: NavController,
+    btViewModel: BluetoothViewModel,
+    sensorViewModel: SensorViewModel,
+    resultViewModel: ResultViewModel
         ) {
         var minPeakHeight by remember { mutableStateOf(10.0) }
         var minPeakDistance by remember { mutableStateOf(40) }

@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.sensor
 
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -49,7 +49,6 @@ import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.CSV_RESULT
 import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -92,11 +91,7 @@ fun SensorMeasureScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        if( !sensorViewModel.isMeasuring.value ) {
-                            navController.navigate(PROFILE)
-                        }
-//                        navController.popBackStack()
+                    IconButton(onClick = { navController.navigateUp()
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,

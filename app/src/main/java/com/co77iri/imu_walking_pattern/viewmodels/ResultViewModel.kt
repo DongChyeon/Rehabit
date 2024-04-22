@@ -6,10 +6,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.co77iri.imu_walking_pattern.models.CSVData
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 
-class ResultViewModel(application: Application) : AndroidViewModel(application) {
+class ResultViewModel : ViewModel() {
     data class CsvSession(
         val leftFile: File,
         val rightFile: File

@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.CSV_SELECT
 import com.co77iri.imu_walking_pattern.SENSOR_SETTING
 import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
@@ -52,10 +53,11 @@ import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuSelectScreen(
-    navController: NavController,
-    profileViewModel: ProfileLegacyViewModel
+    navController: NavController
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
+
+    val selectedProfile = App.selectedProfile!!
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -63,8 +65,7 @@ fun MenuSelectScreen(
                 CenterAlignedTopAppBar (
                     title = {
                         Text(
-                            // selectedProfile이 무조건 있다고 가정하고 !! 붙이기 (selectedProfile은 nullable 변수)
-                            profileViewModel.selectedProfile!!.name,
+                            selectedProfile.emrPatientNumber,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             color = White,
@@ -126,10 +127,6 @@ fun MenuSelectScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-//                        .padding(20.dp) 추가x
-                        .clickable {
-//                            showDialog = true
-                        }
 
                 ) {
                     Column(
@@ -137,25 +134,21 @@ fun MenuSelectScreen(
                             .fillMaxWidth()
                             .padding(25.dp), // o
                         verticalArrangement = Arrangement.Center,
-//                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // 전화번호
                         MenuProfileRow(
                             rowIcon = Icons.Rounded.Phone,
-                            rowText = profileViewModel.selectedProfile!!.phoneNumber
+                            rowText = selectedProfile.emrPatientNumber
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         MenuProfileRow(
                             rowIcon = Icons.Rounded.Create,
-                            rowText = profileViewModel.selectedProfile!!.height.toString()
-                                        + "cm, "
-                                        + profileViewModel.selectedProfile!!.weight.toString()
-                                        + "kg"
+                            rowText = "${selectedProfile.height} cm"
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         MenuProfileRow(
                             rowIcon = Icons.Rounded.DateRange,
-                            rowText = profileViewModel.selectedProfile!!.birthDate
+                            rowText = selectedProfile.birthYear
                         )
                     }
                 }
@@ -179,8 +172,6 @@ fun MenuSelectScreen(
                     navDestination = SENSOR_SETTING
                 )
             }
-
-//            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -198,11 +189,9 @@ fun MenuProfileRow(
         Box(
             modifier = Modifier
                 .size(30.dp, 30.dp)
-//                            .background(color = Color.White)
 
         ) {
             Icon(
-//                imageVector = Icons.Rounded.Phone,
                 imageVector = rowIcon,
                 contentDescription = "Add Icon",
                 modifier = Modifier.size(30.dp, 30.dp),

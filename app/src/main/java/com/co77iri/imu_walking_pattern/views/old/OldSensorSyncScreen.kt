@@ -11,7 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.ui.component.CustomTopAppBar
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 
 @Composable
 fun OldSensorSyncScreen(

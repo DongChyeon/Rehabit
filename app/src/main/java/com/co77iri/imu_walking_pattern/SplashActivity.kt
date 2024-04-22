@@ -47,6 +47,7 @@ class SplashActivity : ComponentActivity() {
             LaunchedEffect(true) {
                 delay(500)
                 startActivity(context, Intent(context, MainActivity::class.java), null)
+                finish()
             }
         }
     }

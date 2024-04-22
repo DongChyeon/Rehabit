@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.BluetoothViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 
 @Composable
 fun ScanResultCard(btViewModel: BluetoothViewModel, sensorViewModel: SensorViewModel, device: BluetoothDevice, isConnected: Boolean) {

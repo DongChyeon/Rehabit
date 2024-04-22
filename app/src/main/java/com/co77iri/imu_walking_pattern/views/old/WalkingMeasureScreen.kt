@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.ui.component.CustomTopAppBar
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
 
 @Composable

@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,10 +25,10 @@ import com.co77iri.imu_walking_pattern.Utils.isBluetoothAdapterEnabled
 import com.co77iri.imu_walking_pattern.Utils.isLocationPermissionGranted
 import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
 import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
-import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.BluetoothViewModel
 import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
 import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.co77iri.imu_walking_pattern.views.MenuSelectScreen
 import com.co77iri.imu_walking_pattern.ui.profile.ProfileScreen
 import com.co77iri.imu_walking_pattern.ui.profile.AddProfileScreen
@@ -38,15 +37,14 @@ import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
 import com.co77iri.imu_walking_pattern.views.OldCsvSelectScreen
 import com.co77iri.imu_walking_pattern.views.CsvResultScreen
 import com.co77iri.imu_walking_pattern.views.CsvSelectScreen
-import com.co77iri.imu_walking_pattern.views.SensorSettingScreen
-import com.co77iri.imu_walking_pattern.views.SensorMeasureScreen
-import com.co77iri.imu_walking_pattern.views.SensorSyncScreen
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorSettingScreen
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorMeasureScreen
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorSyncScreen
 import com.xsens.dot.android.sdk.XsensDotSdk
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -190,7 +188,7 @@ fun NavHost(
         } // 프로필 추가 페이지
 
         composable(MENU_SELECT) {
-            MenuSelectScreen(navController, profileLegacyViewModel)
+            MenuSelectScreen(navController)
         } //
 
         composable(CSV_SELECT) {

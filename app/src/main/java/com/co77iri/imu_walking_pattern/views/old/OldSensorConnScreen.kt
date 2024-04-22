@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.ui.component.CustomTopAppBar
-import com.co77iri.imu_walking_pattern.viewmodels.BluetoothViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.BluetoothViewModel
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.xsens.dot.android.sdk.models.XsensDotDevice
 
 @Composable

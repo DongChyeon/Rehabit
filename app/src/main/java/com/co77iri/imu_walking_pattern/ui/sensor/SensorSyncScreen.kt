@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.sensor
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,14 +19,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.SENSOR_MEASURE
-import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

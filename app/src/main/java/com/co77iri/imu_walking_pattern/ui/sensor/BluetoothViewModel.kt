@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.viewmodels
+package com.co77iri.imu_walking_pattern.ui.sensor
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import android.view.View
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,14 +16,22 @@ import androidx.compose.runtime.getValue
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.github.mikephil.charting.utils.Utils.init
 import com.xsens.dot.android.sdk.utils.XsensDotScanner
 import com.xsens.dot.android.sdk.interfaces.XsensDotScannerCallback
 import com.xsens.dot.android.sdk.models.XsensDotDevice
+import dagger.hilt.android.internal.Contexts.getApplication
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
+@HiltViewModel
 @SuppressLint("MutableCollectionMutableState")
-class BluetoothViewModel(application: Application) : AndroidViewModel(application) {
+class BluetoothViewModel @Inject constructor(
+    @ApplicationContext private val context: Context
+) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
-    private val context: Context = getApplication<Application>().applicationContext
     private val isBluetoothEnabled = MutableLiveData<Boolean>()
     var isScanning: MutableState<Boolean> = mutableStateOf(false)
     val scannedSensorList by mutableStateOf(mutableStateListOf<HashMap<String, Any>>())
@@ -62,8 +71,6 @@ class BluetoothViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
     private val scanner: XsensDotScanner = XsensDotScanner(context, scannerCallback)
-
-
 
     init {
         initXsDotScanner()
