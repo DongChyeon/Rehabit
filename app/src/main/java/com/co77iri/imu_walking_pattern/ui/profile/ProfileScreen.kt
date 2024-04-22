@@ -46,6 +46,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.co77iri.imu_walking_pattern.ADD_PROFILE
+import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.ui.component.ProfileCard
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
@@ -136,7 +137,7 @@ fun ProfileScreen(
                         ProfileCard(
                             user = it,
                             selectProfile = { profile ->
-                                viewModel.updateSelectedProfile(profile)
+                                App.selectedProfile = profile
                             },
                             navigateToMenuSelect = {
                                 navController.navigate(MENU_SELECT)

@@ -27,8 +27,7 @@ class ProfileContract {
                     refresh = LoadState.NotLoading(endOfPaginationReached = true),
                 )
             )
-        ),
-        val selectedProfile: ClinicalPatient? = null
+        )
     ) : UiState
 
     sealed class Event : UiEvent {

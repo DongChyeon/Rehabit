@@ -33,6 +33,7 @@ import com.co77iri.imu_walking_pattern.viewmodels.SensorViewModel
 import com.co77iri.imu_walking_pattern.views.MenuSelectScreen
 import com.co77iri.imu_walking_pattern.ui.profile.ProfileScreen
 import com.co77iri.imu_walking_pattern.ui.profile.AddProfileScreen
+import com.co77iri.imu_walking_pattern.ui.profile.AddProfileViewModel
 import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
 import com.co77iri.imu_walking_pattern.views.OldCsvSelectScreen
 import com.co77iri.imu_walking_pattern.views.CsvResultScreen
@@ -178,11 +179,14 @@ fun NavHost(
 //    NavHost(navController, startDestination = "csv_select") { // 테스트
         composable(PROFILE) {
             val profileViewModel: ProfileViewModel = hiltViewModel()
+
             ProfileScreen(navController, profileViewModel)
         } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
 
         composable(ADD_PROFILE) {
-            AddProfileScreen(context, navController, profileLegacyViewModel)
+            val addProfileViewModel: AddProfileViewModel = hiltViewModel()
+
+            AddProfileScreen(navController, addProfileViewModel)
         } // 프로필 추가 페이지
 
         composable(MENU_SELECT) {

@@ -75,14 +75,14 @@ fun ProfileCard(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    text = user.emrPatientNumber,
+                    text = "emr 번호 : ${user.emrPatientNumber}",
                     fontSize = 18.sp,
                     modifier = Modifier
                         .padding(start = 18.dp),
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = user.birthYear,
+                    text = "출생연도 : ${user.birthYear}",
                     fontSize = 16.sp,
                     modifier = Modifier
                         .padding(start = 18.dp)

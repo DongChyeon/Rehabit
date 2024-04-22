@@ -1,6 +1,5 @@
 package com.co77iri.imu_walking_pattern.ui.profile
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,9 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -32,6 +34,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,62 +45,82 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.models.ProfileData
+import com.co77iri.imu_walking_pattern.network.models.Gender
 import java.text.SimpleDateFormat
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProfileScreen(
-    context: Context,
     navController: NavController,
-    profileViewModel: ProfileLegacyViewModel
+    viewModel: AddProfileViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val effectFlow = viewModel.effect
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
 
-    var userName by remember { mutableStateOf(TextFieldValue()) } // 이름
-    var phoneNumberInput by remember { mutableStateOf(TextFieldValue()) } // 전화번호
-    var heightInput by remember { mutableStateOf(TextFieldValue()) } // 키
-    var weightInput by remember { mutableStateOf(TextFieldValue()) }  // 몸무게
-    var birthInput by remember { mutableStateOf(TextFieldValue()) }  // 생년월일
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = scaffoldState.snackbarHostState
+
+    LaunchedEffect(true) {
+        effectFlow.collect { effect ->
+            when (effect) {
+                is AddProfileContract.Effect.NavigateTo -> {
+                    navController.navigate(effect.destination, effect.navOptions)
+                }
+
+                is AddProfileContract.Effect.NavigateUp -> {
+                    navController.navigateUp()
+                }
+
+                is AddProfileContract.Effect.ShowSnackBar -> {
+                    showSnackBar(snackbarHostState, effect.message)
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-                CenterAlignedTopAppBar (
-                    title = {
-                        Text(
-                            "프로필 생성",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp
+            CenterAlignedTopAppBar (
+                title = {
+                    Text(
+                        "프로필 생성",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "뒤로가기",
+                            tint = Color.White
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = "뒤로가기",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
 
-                )
-            },
-        ) { innerPadding ->
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .background(
@@ -129,32 +152,17 @@ fun AddProfileScreen(
                     )
                 }
 
-                // 이름
+                // EMR 번호
                 TextField(
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min=45.dp),
-                    value = userName,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 45.dp),
+                    value = uiState.emrPatientNumber,
                     singleLine = true, // 한 줄만 작성할 수 있도록
-                    onValueChange = { userName = it }, // 유저가 입력한 값(it)을 remember에 저장
-                    label = { Text("이름") },
-                    placeholder = { Text("텍스트를 작성해주세요.") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color(0xFFE2E2E2),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                )
-
-                // 전화번호
-                TextField(
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min=45.dp),
-                    value = phoneNumberInput,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // 키보드 타입 지정
-                    onValueChange = { phoneNumberInput = it },
-                    label = { Text("전화번호") },
-                    placeholder = { Text("010-1234-5678") },
+                    onValueChange = viewModel::updateEmrPatientNumber, // 유저가 입력한 값(it)을 remember에 저장
+                    label = { Text("EMR 번호") },
+                    placeholder = { Text("EMR 번호를 입력해주세요.") },
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color(0xFFE2E2E2),
                         focusedIndicatorColor = Color.Transparent,
@@ -165,13 +173,34 @@ fun AddProfileScreen(
                 // 키
                 TextField(
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min=45.dp),
-                    value = heightInput,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 45.dp),
+                    value = uiState.height,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // 키보드 타입 지정
-                    onValueChange = { heightInput = it },
+                    onValueChange = viewModel::updateHeight,
                     label = { Text("키 (cm)") },
-                    placeholder = { Text("175") },
+                    placeholder = { Text("키를 입력해주세요.") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE2E2E2),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                // 출생년도
+                TextField(
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 45.dp),
+                    value = uiState.birthYear,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // 키보드 타입 지정
+                    onValueChange = viewModel::updateBirthYear,
+                    label = { Text("출생연도") },
+                    placeholder = { Text("출생연도를 입력해주세요.") },
                     colors = TextFieldDefaults.textFieldColors(
                         containerColor = Color(0xFFE2E2E2),
                         focusedIndicatorColor = Color.Transparent,
@@ -179,41 +208,54 @@ fun AddProfileScreen(
                     ),
                 )
 
-                // 몸무게
-                TextField(
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min=45.dp),
-                    value = weightInput,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // 키보드 타입 지정
-                    onValueChange = { weightInput = it },
-                    label = { Text("몸무게 (kg)") },
-                    placeholder = { Text("70") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color(0xFFE2E2E2),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                )
+                Text("성별")
 
-                // 생년월일
-                TextField(
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(min=45.dp),
-                    value = birthInput,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), // 키보드 타입 지정
-                    onValueChange = { birthInput = it },
-                    label = { Text("생년월일") },
-                    placeholder = { Text("19880815") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color(0xFFE2E2E2),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        onClick = { viewModel.updateGender(Gender.M) },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (uiState.gender == Gender.M) {
+                                Color(0xFF424651)
+                            } else {
+                                Color.White
+                            }
+                        )
+                    ) {
+                        Text(
+                            text = "남자",
+                            color = if (uiState.gender == Gender.M) {
+                                Color.White
+                            } else {
+                                Color(0xFF424651)
+                            }
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        onClick = { viewModel.updateGender(Gender.F) },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (uiState.gender == Gender.F) {
+                                Color(0xFF424651)
+                            } else {
+                                Color.White
+                            },
+                        )
+                    ) {
+                        Text(
+                            text = "여자",
+                            color = if (uiState.gender == Gender.F) {
+                                Color.White
+                            } else {
+                                Color(0xFF424651)
+                            }
+                        )
+                    }
+                }
             }
-
 
             Card(
                 shape = RoundedCornerShape(8.dp),
@@ -224,22 +266,7 @@ fun AddProfileScreen(
                     .fillMaxWidth()
                     .height(50.dp)
                     .clickable {
-                        val newProfile = ProfileData(
-                            name = userName.text,
-                            phoneNumber = phoneNumberInput.text,
-                            height = heightInput.text.toDouble(),
-                            weight = weightInput.text.toDouble(),
-                            hospital = "충남대학교",
-                            birthDate = birthInput.text,
-                            caliMinDistance = 10,
-                            caliMaxValue = 40.0,
-                            lastAccessTime = SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date()),
-                            filename = ""
-                        )
-
-                        profileViewModel.saveProfile(context, newProfile) // 작성된 내용대로 프로필 생성
-                        profileViewModel.loadProfiles(context)            // 안드로이드 내부 저장소에서 프로필 로드
-                        navController.navigate(PROFILE)           // 다시 프로필 페이지로 전환
+                        viewModel.addProfile()
                     }
 
             ) {

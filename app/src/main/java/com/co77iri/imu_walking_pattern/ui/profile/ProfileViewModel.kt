@@ -47,12 +47,4 @@ class ProfileViewModel @Inject constructor(
             )
         )
     }
-
-    fun updateSelectedProfile(profile: ClinicalPatient) {
-        updateState(
-            currentState.copy(
-                selectedProfile = profile
-            )
-        )
-    }
 }
