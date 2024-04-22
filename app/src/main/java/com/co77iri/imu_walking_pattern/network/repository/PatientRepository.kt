@@ -12,14 +12,17 @@ import com.co77iri.imu_walking_pattern.network.models.response.ParkinsonTestData
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import java.io.File
 
 interface PatientRepository {
 
     fun postParksonTestData(
         patientId: Int,
-        jsonData: RequestBody,
-        csvFileLeft: MultipartBody.Part,
-        csvFileRight: MultipartBody.Part
+        testDateAndTime: String,
+        testDuration: Double,
+        parkinsonStage: Int,
+        csvFileLeft: File,
+        csvFileRight: File
     ): Flow<ApiResult<BaseReponse>>
 
     fun getParkinsonTestDataList(

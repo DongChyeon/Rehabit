@@ -203,7 +203,7 @@ fun NavHost(
             → 추후에 측정 결과 저장할 때 파일 이름 지을 수 있도록 ViewModel 함수 변경
          */
         composable(CSV_RESULT) {
-            CsvResultScreen(context, navController, resultViewModel, profileLegacyViewModel)
+            CsvResultScreen(context, navController, resultViewModel)
         } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
         /* Todo - CsvResultScreen
             결과 볼때 ViewModel에서 정보 추출하는것 만들기

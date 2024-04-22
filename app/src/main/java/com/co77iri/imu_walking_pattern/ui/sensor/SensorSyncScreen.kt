@@ -33,7 +33,6 @@ fun SensorSyncScreen(
     sensorViewModel: SensorViewModel
 ) {
     Scaffold(
-//        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar (
                 title = {
@@ -55,9 +54,7 @@ fun SensorSyncScreen(
                         )
                     }
                 },
-//                scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
-
             )
         }
     ) { innerPadding ->

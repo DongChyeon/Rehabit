@@ -8,10 +8,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.co77iri.imu_walking_pattern.models.CSVData
+import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
+import javax.inject.Inject
 
-class ResultViewModel : ViewModel() {
+@HiltViewModel
+class ResultViewModel @Inject constructor(
+    private val patientRepository: PatientRepository
+): ViewModel() {
     data class CsvSession(
         val leftFile: File,
         val rightFile: File
@@ -38,7 +43,6 @@ class ResultViewModel : ViewModel() {
             } else {
                 null
             }
-
         }
 
         _csvFiles.value.forEach {
@@ -119,6 +123,7 @@ class ResultViewModel : ViewModel() {
 
         return csvDataInstance.squaredSumBetweenPeaks(peaks.second[0], peaks.second[1])
     }
+
     private fun updateAllStepsSquaredSums() {
         allSquaresForBothFeet.clear()
 
@@ -156,7 +161,11 @@ class ResultViewModel : ViewModel() {
     fun calculateTotalWalkingDistance(): Double {
         updateAllStepsSquaredSums() // 먼저 모든 제곱 합을 업데이트합니다.
 
-        val calibrationSquaredSum = allSquaresForBothFeet[0][0] // 왼발의 첫 걸음 제곱 합으로 대체
+        val calibrationSquaredSum = try {
+            allSquaresForBothFeet[0][0]
+        } catch (e: Exception) {
+            0.0
+        }   // 왼발의 첫 걸음 제곱 합으로 대체
 
         var totalDistance = 0.0
 

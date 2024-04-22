@@ -47,6 +47,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.App
+import com.co77iri.imu_walking_pattern.App.Companion.selectedProfile
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.interfaces.JsonUploadService
 import com.co77iri.imu_walking_pattern.models.CSVData
@@ -75,9 +77,10 @@ import java.io.File
 fun CsvResultScreen(
     context: Context,
     navController: NavController,
-    resultViewModel: ResultViewModel,
-    profileViewModel: ProfileLegacyViewModel
+    resultViewModel: ResultViewModel
 ) {
+    val selectedProfile = App.selectedProfile!!
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
     var showDialog by remember { mutableStateOf(false) }
 
@@ -89,7 +92,7 @@ fun CsvResultScreen(
 
     val totalWalkingDistance = resultViewModel.calculateTotalWalkingDistance()
     val avgWalkingDistance: Double = totalWalkingDistance / totalSteps
-    val avgDistanceDivHeight: Double = avgWalkingDistance / profileViewModel.selectedProfile!!.height
+    val avgDistanceDivHeight: Double = avgWalkingDistance / selectedProfile.height.toDouble()
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
     val gaitCycleDuration = totalTimeInSeconds / totalSteps.toDouble()
@@ -100,24 +103,6 @@ fun CsvResultScreen(
 
     val rightData: CSVData = resultViewModel.selectedData.value?.get(1)!!
     val rightSteps = resultViewModel.getStep(rightData)
-
-    // 업로드
-    val uploadDataList = listOf(
-        UploadJsonData("test", resultViewModel.uploadTitle.value, "양발", totalTimeInSeconds, totalSteps, leftSteps.toString(), rightSteps.toString(), cadence.toInt(), avgWalkingDistance, profileViewModel.selectedProfile!!.height, avgWalkingDistance*2, 5, gaitCycleDuration.toInt()),
-        UploadJsonData("test", resultViewModel.uploadTitle.value, "왼발", totalTimeInSeconds, leftSteps, leftSteps.toString(), "-", cadence.toInt(), avgWalkingDistance, profileViewModel.selectedProfile!!.height, avgWalkingDistance*2-1, 2, gaitCycleDuration.toInt()),
-        UploadJsonData("test", resultViewModel.uploadTitle.value, "오른발", totalTimeInSeconds, rightSteps, "-", rightSteps.toString(), cadence.toInt(), avgWalkingDistance+1, profileViewModel.selectedProfile!!.height, avgWalkingDistance*2+1.1, 3, gaitCycleDuration.toInt())
-    )
-
-    val retrofit = Retrofit.Builder()
-        .baseUrl("http://co77iri.com:8001")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val apiService = retrofit.create(JsonUploadService::class.java)
-
-    // JSON 데이터를 RequestBody 형태로 변환
-    val jsonData = Gson().toJson(uploadDataList) // uploadDataList는 업로드할 JSON 데이터
-    val requestBody = jsonData.toRequestBody("application/json".toMediaTypeOrNull())
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -144,51 +129,12 @@ fun CsvResultScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        // ! 업로드 기능 구현
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-//                                val response = apiService.uploadData(uploadDataList)
-//                                Log.d("response", response.body().toString())
-//                                Log.d("response", response.isSuccessful.toString())
-                                val myDir = File(context.filesDir, "not_uploaded")
-                                val filePath = myDir.toString() + "/" + resultViewModel.uploadTitle.value
+                        val myDir = File(context.filesDir, "not_uploaded")
+                        val filePath = myDir.toString() + "/" + resultViewModel.uploadTitle.value
 
-                                Log.d("test", filePath)
-                                val csv_l = File(filePath + "_L.csv")
-                                val csv_r = File(filePath + "_R.csv")
-
-                                // 파일을 위한 RequestBody 생성
-                                val requestFile_l = csv_l.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-                                val requestFile_r = csv_r.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-
-// MultipartBody.Part 객체 생성
-                                val body_l = MultipartBody.Part.createFormData("csvFile_l", csv_l.name, requestFile_l)
-                                val body_r = MultipartBody.Part.createFormData("csvFile_r", csv_r.name, requestFile_r)
-
-                                val call = apiService.uploadFiles(body_l, body_r, requestBody)
-                                call.enqueue(object : Callback<ResponseBody> {
-                                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                        if (response.isSuccessful) {
-                                            // 업로드 성공 시 처리
-                                            Log.d("Upload", "Upload succeeded")
-                                        } else {
-                                            // 서버 오류 등 업로드 실패 시 처리
-                                            Log.e("Upload", "Upload failed")
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                        // 네트워크 문제 등으로 요청 자체가 실패한 경우 처리
-                                        Log.e("Upload", "Request failed", t)
-                                    }
-                                })
-
-
-
-                            } catch (e: Exception) {
-                                Log.d("error", e.toString())
-                            }
-                        }
+                        Log.d("test", filePath)
+                        val csv_l = File(filePath + "_L.csv")
+                        val csv_r = File(filePath + "_R.csv")
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Share,
