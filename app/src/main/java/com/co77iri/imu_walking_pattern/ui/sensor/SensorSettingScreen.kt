@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberScaffoldState
@@ -113,7 +117,6 @@ fun SensorSettingScreen(
                 )
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 20.dp)
-
         ) {
             Column(
                 modifier = Modifier
@@ -173,45 +176,38 @@ fun SensorSettingScreen(
                 }
             }
 
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF424651)
+            Button(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFF424651),
+                    contentColor = White
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .align(Alignment.BottomCenter)
-                    .clickable {
-                        if (sensorViewModel.sensorList.size != 2) {
-                            scope.launch {
-                                showSnackBar(
-                                    snackbarHostState,
-                                    "센서가 ${sensorViewModel.sensorList.size}개 연결되어 있습니다. 센서를 2개 연결해 주세요."
-                                )
-                            }
-                        } else {
-                            val connSensors: ArrayList<XsensDotDevice> =
-                                ArrayList(sensorViewModel.sensorList)
-
-                            sensorViewModel.startSync(connSensors)
-                            navController.navigate(SENSOR_SYNC)
+                contentPadding = PaddingValues(
+                    vertical = 20.dp
+                ),
+                onClick = {
+                    if (sensorViewModel.sensorList.size != 2) {
+                        scope.launch {
+                            showSnackBar(
+                                snackbarHostState,
+                                "센서가 ${sensorViewModel.sensorList.size}개 연결되어 있습니다. 센서를 2개 연결해 주세요."
+                            )
                         }
-                    },
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        color = White,
-                        text = "보행측정 시작",
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .padding(start = 18.dp)
-                    )
+                    } else {
+                        val connSensors: ArrayList<XsensDotDevice> =
+                            ArrayList(sensorViewModel.sensorList)
+
+                        sensorViewModel.startSync(connSensors)
+                        navController.navigate(SENSOR_SYNC)
+                    }
                 }
+            ) {
+                Text(
+                    color = White,
+                    text = "보행측정 시작",
+                    fontSize = 18.sp,
+                )
             }
         }
     }

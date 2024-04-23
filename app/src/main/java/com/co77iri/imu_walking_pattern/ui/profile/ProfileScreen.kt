@@ -1,30 +1,25 @@
 package com.co77iri.imu_walking_pattern.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -161,27 +156,27 @@ fun AddProfileCard(
     modifier: Modifier = Modifier,
     navigateToAddProfile: () -> Unit
 ) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF424651)
+    Button(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color(0xFF424651),
+            contentColor = White
         ),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .clickable {
-                navigateToAddProfile()
-            },
+        contentPadding = PaddingValues(
+            all = 20.dp
+        ),
+        onClick = {
+            navigateToAddProfile()
+        }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .padding(start = 20.dp)
-                    .size(33.dp, 33.dp)
-
+                modifier = Modifier.size(33.dp, 33.dp)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Add,
@@ -190,12 +185,11 @@ fun AddProfileCard(
                     tint = White
                 )
             }
+
             Text(
                 color = White,
                 text = "프로필 추가",
-                fontSize = 18.sp,
-                modifier = Modifier
-                    .padding(start = 18.dp)
+                fontSize = 18.sp
             )
         }
     }

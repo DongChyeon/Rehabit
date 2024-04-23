@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -57,9 +60,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.MENU_SELECT
+import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
 import com.co77iri.imu_walking_pattern.ui.profile.showSnackBar
+import com.xsens.dot.android.sdk.models.XsensDotDevice
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -124,7 +129,7 @@ fun UploadResultScreen(
 
     viewModel.updateTestDateAndTime(getCurrentDateTime())
     viewModel.updateTotalTimeInSeconds(totalTimeInSeconds)
-    viewModel.updateParkinsonStage(1)
+    viewModel.updateParkinsonStage("")
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -309,30 +314,27 @@ fun UploadResultScreen(
                 }
             }
 
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF424651)
+            Button(
+                modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF424651),
+                    contentColor = White,
+                    disabledContainerColor = Color(0xFFE2E2E2)
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .align(Alignment.BottomCenter)
-                    .clickable {
-                        viewModel.uploadCsvFiles(leftFile, rightFile)
-                    }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        color = White,
-                        text = "검사 결과 업로드",
-                        fontSize = 18.sp
-                    )
+                contentPadding = PaddingValues(
+                    vertical = 20.dp
+                ),
+                enabled = uiState.parkinsonStage.isNotEmpty(),
+                onClick = {
+                    viewModel.uploadCsvFiles(leftFile, rightFile)
                 }
+            ) {
+                Text(
+                    text = "검사 결과 업로드",
+                    fontSize = 18.sp,
+                    color = White
+                )
             }
         }
     }
@@ -343,8 +345,8 @@ fun UploadResultScreen(
 private fun ParkinsonStageDropDown(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    selectedValue: Int,
-    onValueChange: (Int) -> Unit
+    selectedValue: String,
+    onValueChange: (String) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -393,7 +395,7 @@ private fun ParkinsonStageDropDown(
                         text = { Text(text = value.toString()) },
                         onClick = {
                             onExpandedChange(false)
-                            onValueChange(value)
+                            onValueChange(value.toString())
                         },
                     )
                 }
@@ -409,7 +411,7 @@ private fun getCurrentDateTime(): String {
     return currentDateTime.format(formatter)
 }
 
-private fun formatDate(inputDate: String): String {
+fun formatDate(inputDate: String): String {
     return try {
         val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
         val outputFormat = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")

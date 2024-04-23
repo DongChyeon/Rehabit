@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -214,7 +215,9 @@ fun AddProfileScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Button(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         onClick = { viewModel.updateGender(Gender.M) },
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = if (uiState.gender == Gender.M) {
@@ -235,7 +238,9 @@ fun AddProfileScreen(
                     }
 
                     Button(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         onClick = { viewModel.updateGender(Gender.F) },
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = if (uiState.gender == Gender.F) {
@@ -257,32 +262,26 @@ fun AddProfileScreen(
                 }
             }
 
-            Card(
+            Button(
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF424651)
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFF424651),
+                    contentColor = White
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .clickable {
-                        viewModel.addProfile()
-                    }
-
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        color = Color.White,
-                        text = "프로필 생성하기",
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                    )
+                contentPadding = PaddingValues(
+                    all = 20.dp
+                ),
+                onClick = {
+                    viewModel.addProfile()
                 }
+            ) {
+                Text(
+                    color = Color.White,
+                    text = "프로필 생성하기",
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                )
             }
         }
     }
