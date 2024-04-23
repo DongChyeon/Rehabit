@@ -42,6 +42,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.co77iri.imu_walking_pattern.App
+import com.co77iri.imu_walking_pattern.CSV_RESULT
 import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.co77iri.imu_walking_pattern.network.models.response.ParkinsonTestData
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
@@ -149,7 +150,7 @@ fun CsvSelectScreen(
                     results[index]?.let {
                         ResultCard(
                             naviageToCsvResult = {
-                                navController.navigate(UPLOAD_RESULT)
+                                navController.navigate("$CSV_RESULT?resultId=$it")
                             },
                             result = it
                         )
@@ -162,7 +163,7 @@ fun CsvSelectScreen(
 
 @Composable
 fun ResultCard(
-    naviageToCsvResult: () -> Unit,
+    naviageToCsvResult: (Int) -> Unit,
     result: ParkinsonTestData
 ) {
     val (formattedDate, formattedTime) = formatDateAndTime(result.testDateAndTime)
@@ -173,7 +174,7 @@ fun ResultCard(
         ),
         modifier = Modifier
             .clickable {
-                naviageToCsvResult()
+                naviageToCsvResult(result.parkinsonTestDataId)
             }
     ) {
         Row(

@@ -5,6 +5,7 @@ const val PROFILE = "profile"
 const val ADD_PROFILE = "add_profile"
 const val MENU_SELECT = "menu_select"
 const val CSV_SELECT = "csv_select"
+const val CSV_RESULT = "csv_result"
 const val UPLOAD_RESULT = "upload_result"
 
 const val SENSOR_ROUTE = "sensor_route"

@@ -28,6 +28,8 @@ import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
 import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
 import com.co77iri.imu_walking_pattern.ui.upload.UploadResultViewModel
 import com.co77iri.imu_walking_pattern.ui.MenuSelectScreen
+import com.co77iri.imu_walking_pattern.ui.csv.CsvResultScreen
+import com.co77iri.imu_walking_pattern.ui.csv.CsvResultViewModel
 import com.co77iri.imu_walking_pattern.ui.upload.UploadResultScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectViewModel
@@ -164,9 +166,28 @@ fun NavHost() {
             val csvSelectViewModel: CsvSelectViewModel = hiltViewModel()
 
             CsvSelectScreen(navController, csvSelectViewModel)
-        }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
+        }
 
-        composable(route = "${UPLOAD_RESULT}?leftcsv={l_csv}&rightcsv={r_csv}",
+        composable(
+            route = "${CSV_RESULT}?resultId={resultId}",
+            arguments = listOf(
+                navArgument("resultId") {
+                    type = NavType.StringType
+                    defaultValue = "-1"
+                }
+            )
+        ) {
+            val csvResultViewModel: CsvResultViewModel = hiltViewModel()
+
+            CsvResultScreen(
+                navController = navController,
+                resultId = it.arguments?.getString("resultId")?.toInt() ?: -1,
+                viewModel = csvResultViewModel
+            )
+        }
+
+        composable(
+            route = "${UPLOAD_RESULT}?leftcsv={l_csv}&rightcsv={r_csv}",
             arguments = listOf(
                 navArgument("l_csv") {
                     type = NavType.StringType

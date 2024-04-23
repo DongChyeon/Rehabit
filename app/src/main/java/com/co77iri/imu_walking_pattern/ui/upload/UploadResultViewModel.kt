@@ -52,7 +52,11 @@ class UploadResultViewModel @Inject constructor(
             App.selectedProfile?.clinicalPatientId!!,
             currentState.testDateAndTime,
             currentState.totalTimeInSeconds,
-            currentState.parkinsonStage.toInt(),
+            try {
+                currentState.parkinsonStage.toInt()
+            } catch (e: Exception) {
+                0
+            },
             leftFile, rightFile
         ).collect {
             when (it) {

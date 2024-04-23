@@ -1,21 +1,20 @@
-package com.co77iri.imu_walking_pattern.ui.upload
+package com.co77iri.imu_walking_pattern.ui.csv
 
 import androidx.navigation.NavOptions
 import com.co77iri.imu_walking_pattern.UiEffect
 import com.co77iri.imu_walking_pattern.UiEvent
 import com.co77iri.imu_walking_pattern.UiState
+import com.co77iri.imu_walking_pattern.models.CSVData
 
-class UploadResultContract {
-
-    companion object {
-        const val PLACEHOLDER_TEXT = "단계를 설정해주세요"
-    }
+class CsvResultContract {
 
     data class State(
         val isLoading: Boolean = false,
         val testDateAndTime: String = "",
-        val totalTimeInSeconds: Double = 0.0,
-        val parkinsonStage: String = PLACEHOLDER_TEXT
+        val totalTimeInSeconds: String = "",
+        val parkinsonStage: Int = 1,
+        val csvDataLeft: CSVData = CSVData(),
+        val csvDataRight: CSVData = CSVData()
     ) : UiState
 
     sealed class Event : UiEvent
@@ -28,4 +27,5 @@ class UploadResultContract {
         object NavigateUp: Effect()
         data class ShowSnackBar(val message: String) : Effect()
     }
+
 }

@@ -15,7 +15,6 @@ data class ParkinsonTestDataListResult(
 data class ParkinsonTestData(
     @SerializedName("parkinsonTestDataId") val parkinsonTestDataId: Int,
     @SerializedName("testDateAndTime") val testDateAndTime: String,
-    @SerializedName("testDuration") val testDuration: String,
     @SerializedName("parkinsonStage") val parkinsonStage: Int,
     @SerializedName("csvFileUrlLeft") val csvFileUrlLeft: String,
     @SerializedName("csvFileUrlRight") val csvFileUrlRight: String
