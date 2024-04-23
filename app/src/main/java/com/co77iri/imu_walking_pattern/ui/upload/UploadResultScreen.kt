@@ -2,7 +2,6 @@
 
 package com.co77iri.imu_walking_pattern.ui.upload
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,21 +16,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,18 +48,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.models.CSVData
+import com.co77iri.imu_walking_pattern.ui.component.SnackBar
+import com.co77iri.imu_walking_pattern.ui.profile.showSnackBar
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -62,40 +73,75 @@ fun UploadResultScreen(
     navController: NavController,
     l_csv: String,
     r_csv: String,
-    resultViewModel: ResultViewModel
+    viewModel: UploadResultViewModel
 ) {
-    resultViewModel.updateCSVDataFromFile(l_csv)
-    resultViewModel.updateCSVDataFromFile(r_csv)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val effectFlow = viewModel.effect
 
-    val context = LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
+
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = scaffoldState.snackbarHostState
+
+    viewModel.updateCSVDataFromFile(l_csv)
+    viewModel.updateCSVDataFromFile(r_csv)
+    viewModel.updateTestDateAndTime(getCurrentDateTime())
+
+    LaunchedEffect(true) {
+        effectFlow.collect { effect ->
+            when (effect) {
+                is UploadResultContract.Effect.NavigateTo -> {
+                    navController.navigate(effect.destination, effect.navOptions)
+                }
+
+                is UploadResultContract.Effect.NavigateUp -> {
+                    navController.navigateUp()
+                }
+
+                is UploadResultContract.Effect.ShowSnackBar -> {
+                    showSnackBar(snackbarHostState, effect.message)
+                }
+            }
+        }
+    }
+
+    var parkinsonDropdownExpanded by remember { mutableStateOf(false) }
 
     val selectedProfile = App.selectedProfile!!
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
-    var showDialog by remember { mutableStateOf(false) }
-
     // 23-10-04
-    val leftData: CSVData = resultViewModel.updateCSVDataFromFile(l_csv)
-    val leftSteps = resultViewModel.getStep(leftData)
+    val leftFile = File(l_csv)
 
-    val rightData: CSVData = resultViewModel.updateCSVDataFromFile(r_csv)
-    val rightSteps = resultViewModel.getStep(rightData)
+    val leftData: CSVData = viewModel.updateCSVDataFromFile(l_csv)
+    val leftSteps = viewModel.getStep(leftData)
+
+    val rightFile = File(r_csv)
+
+    val rightData: CSVData = viewModel.updateCSVDataFromFile(r_csv)
+    val rightSteps = viewModel.getStep(rightData)
 
     val firstCSVData = leftData
-    val totalSteps = resultViewModel.getTotalStep(leftData, rightData)
+    val totalSteps = viewModel.getTotalStep(leftData, rightData)
 
     val totalTimeInSeconds = firstCSVData.getDataLength() / 60.toDouble()
     val cadence = (totalSteps.toDouble() / (firstCSVData.getDataLength() / 60)) * 60
 
-    val totalWalkingDistance = resultViewModel.calculateTotalWalkingDistance(leftData, rightData)
+    val totalWalkingDistance = viewModel.calculateTotalWalkingDistance(leftData, rightData)
     val avgWalkingDistance: Double = totalWalkingDistance / totalSteps
     val avgDistanceDivHeight: Double = avgWalkingDistance / selectedProfile.height.toDouble()
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
     val gaitCycleDuration = totalTimeInSeconds / totalSteps.toDouble()
 
+    viewModel.updateTestDateAndTime(getCurrentDateTime())
+    viewModel.updateTotalTimeInSeconds(totalTimeInSeconds)
+    viewModel.updateParkinsonStage(1)
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackBar(snackbarHostState)
+        },
         topBar = {
             CenterAlignedTopAppBar (
                 title = {
@@ -117,461 +163,560 @@ fun UploadResultScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = {
-                        val csv_l = File(l_csv)
-                        val csv_r = File(r_csv)
-
-                        resultViewModel.uploadCsvFiles(
-                            getCurrentDateTime(),
-                            totalTimeInSeconds,
-                            1,
-                            csv_l,
-                            csv_r
-                        )
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Share,
-                            contentDescription = "Share",
-                            tint = White
-                        )
-                    }
-                },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
             )
         },
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
+                .fillMaxSize()
                 .background(
                     color = Color(0xFFF3F3F3)
                 )
                 .padding(innerPadding)
-                .padding(top = 20.dp)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()), // 스크롤 추가
-
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp))
-            {
-                Text(
-                    text = "검사결과 보기",
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .padding(start = 20.dp),
-                    fontWeight = FontWeight.SemiBold,
-
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 100.dp)
+                    .verticalScroll(rememberScrollState()), // 스크롤 추가
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ParkinsonStageDropDown(
+                        expanded = parkinsonDropdownExpanded,
+                        onExpandedChange = { parkinsonDropdownExpanded = it },
+                        selectedValue = uiState.parkinsonStage,
+                        onValueChange = viewModel::updateParkinsonStage
                     )
 
-                // 총 레코딩 시간
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE2E2E2)
-                    ),
-
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .clickable {
-                            showDialog = true
-                        }
-
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "총 레코딩 시간",
-                            fontSize = 18.sp,
-                            modifier = Modifier,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = "${firstCSVData.getDataLength()/60}초",
-                            fontSize = 18.sp,
-                            modifier = Modifier,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                }
-
-                // 총 걸음 수
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE2E2E2)
-                    ),
-
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .clickable {
-                            showDialog = true
-                        }
-
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 20.dp, bottom = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "총 걸음 수",
-                            fontSize = 18.sp,
-                            modifier = Modifier,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            text = totalSteps.toString(),
-                            fontSize = 18.sp,
-                            modifier = Modifier,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-
-                    // 라인
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(height = 1.dp)
-                            .background(color = Color(0xFFC8C8C8))
+                    Text(
+                        text = "검사결과 보기",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
 
-                    // 왼발
+                    // 총 레코딩 시간
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE2E2E2)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(all = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "총 레코딩 시간",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = "${firstCSVData.getDataLength() / 60}초",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
+
+                    // 총 걸음 수
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE2E2E2)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 20.dp, bottom = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "총 걸음 수",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = totalSteps.toString(),
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 20.dp, bottom = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "테스트 일시",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = formatDate(uiState.testDateAndTime),
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+
+                        /*
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                                .padding(top = 20.dp, bottom = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "파킨슨 단계",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                text = "${uiState.parkinsonStage} 단계",
+                                fontSize = 18.sp,
+                                modifier = Modifier,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                         */
+
+                        // 라인
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(height = 1.dp)
+                                .background(color = Color(0xFFC8C8C8))
+                        )
+
+                        // 왼발
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "왼발",
+                                fontSize = 16.sp,
+                                modifier = Modifier,
+                                color = Color(0xFF7D7E81)
+                            )
+                            Text(
+                                text = leftSteps.toString(),
+                                fontSize = 16.sp,
+                                modifier = Modifier,
+                                color = Color(0xFF7D7E81)
+                            )
+                        }
+
+                        // 오른발
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 20.dp)
+                                .padding(horizontal = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "오른발",
+                                fontSize = 16.sp,
+                                modifier = Modifier,
+                                color = Color(0xFF7D7E81)
+                            )
+                            Text(
+                                text = rightSteps.toString(),
+                                fontSize = 16.sp,
+                                modifier = Modifier,
+                                color = Color(0xFF7D7E81)
+                            )
+                        }
+                    }
+
+
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "왼발",
-                            fontSize = 16.sp,
-                            modifier = Modifier,
-                            color = Color(0xFF7D7E81)
-                        )
-                        Text(
-                            text = leftSteps.toString(),
-                            fontSize = 16.sp,
-                            modifier = Modifier,
-                            color = Color(0xFF7D7E81)
-                        )
+
+                        // 분당 걸음 수
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Cadence",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "분당 걸음 수",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81)
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", cadence)}걸음/분",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Right
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
+
+                        // 걸음 거리
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Stride length",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "걸음 거리",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81)
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", avgWalkingDistance)}cm",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+                        }
                     }
 
-                    // 오른발
+
+
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 20.dp)
-                            .padding(horizontal = 20.dp),
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "오른발",
-                            fontSize = 16.sp,
-                            modifier = Modifier,
-                            color = Color(0xFF7D7E81)
-                        )
-                        Text(
-                            text = rightSteps.toString(),
-                            fontSize = 16.sp,
-                            modifier = Modifier,
-                            color = Color(0xFF7D7E81)
-                        )
-                    }
-                }
 
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-
-                    // 분당 걸음 수
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
+                        // 신장 비례 걸음 거리 비율
+                        Card(
                             modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
                         ) {
-                            Text(
-                                text = "Cadence",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "분당 걸음 수",
-                                fontSize = 16.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81)
-                            )
-                            Text(
-                                text = "${String.format("%.1f", cadence)}걸음/분",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Right
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Stride length/Height",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                    lineHeight = 18.sp
+                                )
+                                Text(
+                                    text = "신장 비례 걸음 비율",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81)
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", avgDistanceDivHeight)}",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Right
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
+
+                        // Step length
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Step length",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "한 발을 내디뎌 반대쪽 발이 땅에 닿을 때까지의 거리",
+                                    fontSize = 14.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81),
+                                    lineHeight = 15.sp
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", avgWalkingDistance * 2)}cm",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
 
-                    // 걸음 거리
-                    Card(
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
+
+                        // 평균 속도
+                        Card(
                             modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
                         ) {
-                            Text(
-                                text = "Stride length",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "걸음 거리",
-                                fontSize = 16.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81)
-                            )
-                            Text(
-                                text = "${String.format("%.1f",avgWalkingDistance)}cm",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Avg Speed",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = "평균 속도",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81)
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", avgSpeed)}cm/s",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Right
+                                )
+                            }
                         }
-                    }
-                }
 
+                        Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
 
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-
-                    // 신장 비례 걸음 거리 비율
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
+                        // 걸음 거리
+                        Card(
                             modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE2E2E2)
+                            ),
                         ) {
-                            Text(
-                                text = "Stride length/Height",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                                lineHeight = 18.sp
-                            )
-                            Text(
-                                text = "신장 비례 걸음 비율",
-                                fontSize = 16.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81)
-                            )
-                            Text(
-                                text = "${String.format("%.1f", avgDistanceDivHeight)}",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Right
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
-
-                    // Step length
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
-                        ) {
-                            Text(
-                                text = "Step length",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "한 발을 내디뎌 반대쪽 발이 땅에 닿을 때까지의 거리",
-                                fontSize = 14.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81),
-                                lineHeight = 15.sp
-                            )
-                            Text(
-                                text = "${String.format("%.1f",avgWalkingDistance*2)}cm",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .padding(start = 20.dp, end = 20.dp)
+                                    .height(130.dp)
+                            ) {
+                                Text(
+                                    text = "Gait cycleduration",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                    lineHeight = 18.sp
+                                )
+                                Text(
+                                    text = "보행 주기",
+                                    fontSize = 14.sp,
+                                    modifier = Modifier,
+                                    color = Color(0xFF7D7E81),
+                                )
+                                Text(
+                                    text = "${String.format("%.1f", gaitCycleDuration)}초",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
 
-
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF424651)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .align(Alignment.BottomCenter)
+                    .clickable {
+                        viewModel.uploadCsvFiles(leftFile, rightFile)
+                    }
+            ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.Center
                 ) {
-
-                    // 평균 속도
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
-                        ) {
-                            Text(
-                                text = "Avg Speed",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "평균 속도",
-                                fontSize = 16.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81)
-                            )
-                            Text(
-                                text = "${String.format("%.1f", avgSpeed)}cm/s",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Right
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp)) // 10.dp 간격을 추가
-
-                    // 걸음 거리
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 20.dp)
-                            .clickable {
-                                showDialog = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFE2E2E2)
-                        ),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(start = 20.dp, end = 20.dp)
-                                .height(130.dp)
-                        ) {
-                            Text(
-                                text = "Gait cycleduration",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                                lineHeight = 18.sp
-                            )
-                            Text(
-                                text = "보행 주기",
-                                fontSize = 14.sp,
-                                modifier = Modifier,
-                                color = Color(0xFF7D7E81),
-                            )
-                            Text(
-                                text = "${String.format("%.1f", gaitCycleDuration)}초",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
+                    Text(
+                        color = White,
+                        text = "검사 결과 업로드",
+                        fontSize = 18.sp
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ParkinsonStageDropDown(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    selectedValue: Int,
+    onValueChange: (Int) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = "파킨슨 단계",
+            fontSize = 18.sp,
+            modifier = Modifier,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        ExposedDropdownMenuBox(
+            modifier = Modifier.fillMaxWidth(),
+            expanded = expanded,
+            onExpandedChange = {
+                onExpandedChange(it)
+            }
+        ) {
+            TextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                value = "$selectedValue",
+                onValueChange = {},
+                readOnly = true,
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                shape = if (expanded) RoundedCornerShape(8.dp).copy(
+                    bottomEnd = CornerSize(0.dp),
+                    bottomStart = CornerSize(0.dp)
+                ) else RoundedCornerShape(8.dp),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { onExpandedChange(false) },
+                modifier = Modifier
+                    .background(Color(0xFFE2E2E2))
+                    .fillMaxWidth(),
+            ) {
+                (1..5).forEach { value ->
+                    DropdownMenuItem(
+                        text = { Text(text = value.toString()) },
+                        onClick = {
+                            onExpandedChange(false)
+                            onValueChange(value)
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
 
 private fun getCurrentDateTime(): String {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-    return dateFormat.format(Date())
+    val currentDateTime = LocalDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+
+    return currentDateTime.format(formatter)
+}
+
+private fun formatDate(inputDate: String): String {
+    return try {
+        val inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val outputFormat = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")
+        val date = LocalDateTime.parse(inputDate, inputFormat)
+        date.format(outputFormat)
+    } catch (e: Exception) {
+        ""
+    }
 }

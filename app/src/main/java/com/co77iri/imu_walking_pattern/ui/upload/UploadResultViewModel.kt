@@ -1,91 +1,78 @@
 package com.co77iri.imu_walking_pattern.ui.upload
 
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.co77iri.imu_walking_pattern.App
+import com.co77iri.imu_walking_pattern.BaseViewModel
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class ResultViewModel @Inject constructor(
+class UploadResultViewModel @Inject constructor(
     private val patientRepository: PatientRepository
-): ViewModel() {
-    data class CsvSession(
-        val leftFile: File,
-        val rightFile: File
-    )
+): BaseViewModel<UploadResultContract.State, UploadResultContract.Event, UploadResultContract.Effect>(
+    initialState = UploadResultContract.State()
+) {
+    override fun reduceState(event: UploadResultContract.Event) { }
 
-    private val _csvFiles = mutableStateOf<List<CsvSession>>(listOf())
-    val csvFiles: State<List<CsvSession>> = _csvFiles
+    fun updateTestDateAndTime(testDateAndTime: String) {
+        updateState(
+            currentState.copy(
+                testDateAndTime = testDateAndTime
+            )
+        )
+    }
+
+    fun updateTotalTimeInSeconds(totalTimeInSeconds: Double) {
+        updateState(
+            currentState.copy(
+                totalTimeInSeconds = totalTimeInSeconds
+            )
+        )
+    }
+
+    fun updateParkinsonStage(parkinsonStage: Int) {
+        updateState(
+            currentState.copy(
+                parkinsonStage = parkinsonStage
+            )
+        )
+    }
 
     fun uploadCsvFiles(
-        testDateAndTime: String,
-        totalTimeInSeconds: Double,
-        parkinsonStage: Int,
-        leftFile: File,
-        rightFile: File
+        leftFile: File, rightFile: File
     ) = viewModelScope.launch {
         patientRepository.postParksonTestData(
             App.selectedProfile?.clinicalPatientId!!,
-            testDateAndTime,
-            totalTimeInSeconds,
-            parkinsonStage,
-            leftFile,
-            rightFile
+            currentState.testDateAndTime,
+            currentState.totalTimeInSeconds,
+            currentState.parkinsonStage,
+            leftFile, rightFile
         ).collect {
             when (it) {
                 is ApiResult.Success -> {
-
+                    postEffect(UploadResultContract.Effect.ShowSnackBar("업로드 성공!"))
+                    delay(500)
+                    postEffect(UploadResultContract.Effect.NavigateUp)
                 }
 
                 is ApiResult.ApiError -> {
-
+                    postEffect(UploadResultContract.Effect.ShowSnackBar(it.message))
                 }
 
                 is ApiResult.NetworkError -> {
-
+                    postEffect(UploadResultContract.Effect.ShowSnackBar("네트워크 오류가 발생했습니다."))
                 }
             }
         }
     }
 
-    fun loadcsvFiles(directory: File) {
-        Log.d("Files", "Path: ${directory.absolutePath}")
-        val allFiles = directory.listFiles { _, name ->
-            name.endsWith("_L.csv") || name.endsWith("_R.csv")
-        } ?: arrayOf()
-
-        val groupedFiles = allFiles.groupBy { file ->
-            file.nameWithoutExtension.substringBeforeLast("_")
-        }
-
-        _csvFiles.value = groupedFiles.values.mapNotNull { fileList ->
-            val leftFile = fileList.find { it.name.endsWith("_L.csv") }
-            val rightFile = fileList.find { it.name.endsWith("_R.csv") }
-            if (leftFile != null && rightFile != null) {
-                CsvSession(leftFile, rightFile)
-            } else {
-                null
-            }
-        }
-
-        _csvFiles.value.forEach {
-            Log.d("Files", "File: ${it.leftFile.name}")
-            Log.d("Files", "File: ${it.rightFile.name}")
-        }
-    }
-
-    val selectedData = MutableLiveData<List<CSVData>>(emptyList())
     val allSquaresForBothFeet = mutableListOf<List<Double>>() // 왼발 오른발 저장
 
     fun updateCSVDataFromFile(filename: String): CSVData {
@@ -125,9 +112,6 @@ class ResultViewModel @Inject constructor(
         return updateData
     }
 
-    fun clearSelectedData() {
-        selectedData.value = emptyList()
-    }
 
     fun getStep(csvData: CSVData): Int {
         val peaks: Pair<List<Double>, List<Int>> = csvData.myFindPeaks()
@@ -149,15 +133,6 @@ class ResultViewModel @Inject constructor(
         val totalSteps = allPeaks.sumOf { it.second.size }
 
         return totalSteps
-    }
-
-    fun getFirstStepSquaredSum(): Double {
-        val csvDataInstance = selectedData.value?.get(0) ?: return 0.0
-        val peaks = csvDataInstance.myFindPeaks()
-
-        if (peaks.second.size < 2) return 0.0 // Not enough peaks
-
-        return csvDataInstance.squaredSumBetweenPeaks(peaks.second[0], peaks.second[1])
     }
 
     private fun updateAllStepsSquaredSums(

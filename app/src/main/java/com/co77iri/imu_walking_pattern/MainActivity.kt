@@ -26,7 +26,7 @@ import com.co77iri.imu_walking_pattern.Utils.isBluetoothAdapterEnabled
 import com.co77iri.imu_walking_pattern.Utils.isLocationPermissionGranted
 import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
 import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
-import com.co77iri.imu_walking_pattern.ui.upload.ResultViewModel
+import com.co77iri.imu_walking_pattern.ui.upload.UploadResultViewModel
 import com.co77iri.imu_walking_pattern.ui.MenuSelectScreen
 import com.co77iri.imu_walking_pattern.ui.upload.UploadResultScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectScreen
@@ -178,13 +178,13 @@ fun NavHost() {
                 }
             )
         ) {
-            val resultViewModel: ResultViewModel = hiltViewModel()
+            val uploadResultViewModel: UploadResultViewModel = hiltViewModel()
 
             UploadResultScreen(
                 navController = navController,
                 l_csv = it.arguments?.getString("l_csv") ?: "",
                 r_csv = it.arguments?.getString("r_csv") ?: "",
-                resultViewModel = resultViewModel
+                viewModel = uploadResultViewModel
             )
         }
 
