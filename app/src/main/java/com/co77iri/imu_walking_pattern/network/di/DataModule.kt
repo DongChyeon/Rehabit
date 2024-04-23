@@ -1,5 +1,6 @@
 package com.co77iri.imu_walking_pattern.network.di
 
+import android.content.Context
 import com.co77iri.imu_walking_pattern.network.datasource.PatientDataSource
 import com.co77iri.imu_walking_pattern.network.datasource.PatientDataSourceImpl
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
@@ -8,6 +9,7 @@ import com.co77iri.imu_walking_pattern.network.service.PatientService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
@@ -26,8 +28,9 @@ object DataModule {
     @Provides
     @Singleton
     fun providesPatientRepository(
+        @ApplicationContext context: Context,
         patientDataSource: PatientDataSource
     ): PatientRepository =
-        PatientRepositoryImpl(patientDataSource)
+        PatientRepositoryImpl(context, patientDataSource)
 
 }

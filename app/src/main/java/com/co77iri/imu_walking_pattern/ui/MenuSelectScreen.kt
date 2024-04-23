@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,9 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.CSV_SELECT
-import com.co77iri.imu_walking_pattern.SENSOR_SETTING
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
+import com.co77iri.imu_walking_pattern.SENSOR_ROUTE
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,7 +167,7 @@ fun MenuSelectScreen(
                 MenuSelectCustomBtn(
                     btnText = "보행 검사 시작",
                     navController = navController,
-                    navDestination = SENSOR_SETTING
+                    navDestination = SENSOR_ROUTE
                 )
             }
         }

@@ -1,15 +1,18 @@
-package com.co77iri.imu_walking_pattern.viewmodels
+package com.co77iri.imu_walking_pattern.ui.upload
 
-import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.models.CSVData
+import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.inject.Inject
 
@@ -24,6 +27,37 @@ class ResultViewModel @Inject constructor(
 
     private val _csvFiles = mutableStateOf<List<CsvSession>>(listOf())
     val csvFiles: State<List<CsvSession>> = _csvFiles
+
+    fun uploadCsvFiles(
+        testDateAndTime: String,
+        totalTimeInSeconds: Double,
+        parkinsonStage: Int,
+        leftFile: File,
+        rightFile: File
+    ) = viewModelScope.launch {
+        patientRepository.postParksonTestData(
+            App.selectedProfile?.clinicalPatientId!!,
+            testDateAndTime,
+            totalTimeInSeconds,
+            parkinsonStage,
+            leftFile,
+            rightFile
+        ).collect {
+            when (it) {
+                is ApiResult.Success -> {
+
+                }
+
+                is ApiResult.ApiError -> {
+
+                }
+
+                is ApiResult.NetworkError -> {
+
+                }
+            }
+        }
+    }
 
     fun loadcsvFiles(directory: File) {
         Log.d("Files", "Path: ${directory.absolutePath}")
@@ -54,8 +88,7 @@ class ResultViewModel @Inject constructor(
     val selectedData = MutableLiveData<List<CSVData>>(emptyList())
     val allSquaresForBothFeet = mutableListOf<List<Double>>() // 왼발 오른발 저장
 
-    var uploadTitle = mutableStateOf("")
-    fun updateCSVDataFromFile( filename: String ) {
+    fun updateCSVDataFromFile(filename: String): CSVData {
         val updateData = CSVData()
         val file = File(filename)
 
@@ -85,11 +118,11 @@ class ResultViewModel @Inject constructor(
                     }
                 }
             }
-
-            selectedData.value = selectedData.value?.plus(updateData) ?: listOf(updateData)
         } else {
-            Log.d(TAG,"File is not exist")
+            Log.d(TAG, "File is not exist")
         }
+
+        return updateData
     }
 
     fun clearSelectedData() {
@@ -103,14 +136,17 @@ class ResultViewModel @Inject constructor(
         return steps
     }
 
-    fun getTotalStep(): Int {
-        var allPeaks = mutableStateOf(listOf<Pair<List<Double>, List<Int>>>())
-        selectedData.value?.forEach { csvData ->
-            val peaks = csvData.myFindPeaks()
-            allPeaks.value = allPeaks.value + peaks
-        }
+    fun getTotalStep(
+        leftCSVData: CSVData,
+        rightCSVData: CSVData
+    ): Int {
+        var allPeaks = mutableListOf<Pair<List<Double>, List<Int>>>()
+        val leftPeaks = leftCSVData.myFindPeaks()
+        val rightPeaks = rightCSVData.myFindPeaks()
+        allPeaks.addAll(listOf(leftPeaks))
+        allPeaks.addAll(listOf(rightPeaks))
 
-        val totalSteps = allPeaks.value.sumOf { it.second.size }
+        val totalSteps = allPeaks.sumOf { it.second.size }
 
         return totalSteps
     }
@@ -124,13 +160,16 @@ class ResultViewModel @Inject constructor(
         return csvDataInstance.squaredSumBetweenPeaks(peaks.second[0], peaks.second[1])
     }
 
-    private fun updateAllStepsSquaredSums() {
+    private fun updateAllStepsSquaredSums(
+        leftCSVData: CSVData,
+        rightCSVData: CSVData
+    ) {
         allSquaresForBothFeet.clear()
 
-        selectedData.value?.forEach { csvData ->
-            val data = getStepsSquaredSumsForCSVData(csvData)
-            allSquaresForBothFeet.add(data)
-        }
+        val leftData = getStepsSquaredSumsForCSVData(leftCSVData)
+        val rightData = getStepsSquaredSumsForCSVData(rightCSVData)
+        allSquaresForBothFeet.add(leftData)
+        allSquaresForBothFeet.add(rightData)
     }
 
     private fun getStepsSquaredSumsForCSVData(csvData: CSVData): List<Double> {
@@ -158,8 +197,13 @@ class ResultViewModel @Inject constructor(
         return (squaredSum / calibrationSquaredSum) * calibrationValue
     }
 
-    fun calculateTotalWalkingDistance(): Double {
-        updateAllStepsSquaredSums() // 먼저 모든 제곱 합을 업데이트합니다.
+    fun calculateTotalWalkingDistance(
+        leftCSVData: CSVData,
+        rightCSVData: CSVData
+    ): Double {
+        updateAllStepsSquaredSums(
+            leftCSVData, rightCSVData
+        ) // 먼저 모든 제곱 합을 업데이트합니다.
 
         val calibrationSquaredSum = try {
             allSquaresForBothFeet[0][0]
@@ -176,9 +220,9 @@ class ResultViewModel @Inject constructor(
         }
 
         // 총 걸음 수에서 시작과 끝의 걸음을 제외하기 위해 2 걸음의 거리를 뺍니다.
-        val avgStrideLength = totalDistance / (getTotalStep() - 2)
+        val avgStrideLength = totalDistance / (getTotalStep(leftCSVData, rightCSVData) - 2)
 
-        return avgStrideLength * (getTotalStep() - 2)
+        return avgStrideLength * (getTotalStep(leftCSVData, rightCSVData) - 2)
     }
 
     companion object {

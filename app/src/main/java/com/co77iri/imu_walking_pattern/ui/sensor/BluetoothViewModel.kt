@@ -31,8 +31,8 @@ import javax.inject.Inject
 class BluetoothViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-    @SuppressLint("StaticFieldLeak")
     private val isBluetoothEnabled = MutableLiveData<Boolean>()
+
     var isScanning: MutableState<Boolean> = mutableStateOf(false)
     val scannedSensorList by mutableStateOf(mutableStateListOf<HashMap<String, Any>>())
 
@@ -86,10 +86,6 @@ class BluetoothViewModel @Inject constructor(
         isScanning.value = false
         scanner.stopScan()
         Log.d("Bluetooth", "scan stopped!")
-    }
-
-    fun updateBluetoothEnableState(enabled: Boolean) {
-       isBluetoothEnabled.postValue(enabled)
     }
 
     private fun initXsDotScanner() {

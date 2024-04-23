@@ -13,33 +13,26 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.co77iri.imu_walking_pattern.Utils.isBluetoothAdapterEnabled
 import com.co77iri.imu_walking_pattern.Utils.isLocationPermissionGranted
 import com.co77iri.imu_walking_pattern.Utils.requestEnableBluetooth
 import com.co77iri.imu_walking_pattern.Utils.requestLocationPermission
-import com.co77iri.imu_walking_pattern.ui.sensor.BluetoothViewModel
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
-import com.co77iri.imu_walking_pattern.views.MenuSelectScreen
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileScreen
-import com.co77iri.imu_walking_pattern.ui.profile.AddProfileScreen
-import com.co77iri.imu_walking_pattern.ui.profile.AddProfileViewModel
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
-import com.co77iri.imu_walking_pattern.views.OldCsvSelectScreen
-import com.co77iri.imu_walking_pattern.views.CsvResultScreen
-import com.co77iri.imu_walking_pattern.views.CsvSelectScreen
-import com.co77iri.imu_walking_pattern.ui.sensor.SensorSettingScreen
-import com.co77iri.imu_walking_pattern.ui.sensor.SensorMeasureScreen
-import com.co77iri.imu_walking_pattern.ui.sensor.SensorSyncScreen
+import com.co77iri.imu_walking_pattern.ui.upload.ResultViewModel
+import com.co77iri.imu_walking_pattern.ui.MenuSelectScreen
+import com.co77iri.imu_walking_pattern.ui.upload.UploadResultScreen
+import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectScreen
+import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectViewModel
+import com.co77iri.imu_walking_pattern.ui.profile.profileGraph
+import com.co77iri.imu_walking_pattern.ui.sensor.sensorGraph
 import com.xsens.dot.android.sdk.XsensDotSdk
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -50,12 +43,6 @@ import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val bluetoothViewModel: BluetoothViewModel by viewModels()
-    private val profileLegacyViewModel: ProfileLegacyViewModel by viewModels()
-    private val sensorViewModel: SensorViewModel by viewModels()
-    private val resultViewModel: ResultViewModel by viewModels()
-//    private val profileViewModelOld: ProfileViewModel_old by viewModels()
-
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,12 +58,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                NavHost(
-                    profileLegacyViewModel = profileLegacyViewModel,
-                    bluetoothViewModel = bluetoothViewModel,
-                    sensorViewModel = sensorViewModel,
-                    resultViewModel = resultViewModel
-                )
+                NavHost()
             }
         }
     }
@@ -111,8 +93,8 @@ class MainActivity : ComponentActivity() {
             if (action != null) {
                 if (action == BluetoothAdapter.ACTION_STATE_CHANGED) {
                     when ( intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) ) {
-                        BluetoothAdapter.STATE_OFF -> bluetoothViewModel.updateBluetoothEnableState(false)
-                        BluetoothAdapter.STATE_ON -> bluetoothViewModel.updateBluetoothEnableState(true)
+                        BluetoothAdapter.STATE_OFF -> App.isBluetoothEnabled = false
+                        BluetoothAdapter.STATE_ON -> App.isBluetoothEnabled = true
                     }
                 }
             }
@@ -152,7 +134,7 @@ class MainActivity : ComponentActivity() {
         }
         val status = isBluetoothEnabled && isPermissionGranted
 //        Log.i(TAG, "checkBluetoothAndPermission() - $status")
-        bluetoothViewModel.updateBluetoothEnableState(status)
+        App.isBluetoothEnabled = status
 
         return status
     }
@@ -163,62 +145,48 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NavHost(
-    profileLegacyViewModel: ProfileLegacyViewModel,
-    bluetoothViewModel: BluetoothViewModel,
-    sensorViewModel: SensorViewModel,
-    resultViewModel: ResultViewModel
-) {
+fun NavHost() {
     val context = LocalContext.current
 
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = PROFILE) { // 테스트
-//    NavHost(navController, startDestination = "csv_select") { // 테스트
-        composable(PROFILE) {
-            val profileViewModel: ProfileViewModel = hiltViewModel()
+    NavHost(navController, startDestination = PROFILE_ROUTE) { // 테스트
 
-            ProfileScreen(navController, profileViewModel)
-        } // 프로필 선택 페이지 -> 프로필 선택하면 menu_select로 이동
+        profileGraph(navController = navController)
 
-        composable(ADD_PROFILE) {
-            val addProfileViewModel: AddProfileViewModel = hiltViewModel()
-
-            AddProfileScreen(navController, addProfileViewModel)
-        } // 프로필 추가 페이지
+        sensorGraph(navController =  navController)
 
         composable(MENU_SELECT) {
             MenuSelectScreen(navController)
         } //
 
         composable(CSV_SELECT) {
-            CsvSelectScreen(navController, resultViewModel)
+            val csvSelectViewModel: CsvSelectViewModel = hiltViewModel()
+
+            CsvSelectScreen(navController, csvSelectViewModel)
         }// 검사결과보기 페이지 -> csv 선택하는 화면 + 업로드 기능 추가
 
-        composable(OLD_CSV_SELECT) {
-            OldCsvSelectScreen(navController)
-        } // 검사결과보기 페이지 -> csv 선택하는 화면
-        /* Todo - CsvSelectScreen
-            내부 저장소에서 결과 csv 스캔 후 카드 모양으로 불러오기
-            → 추후에 측정 결과 저장할 때 파일 이름 지을 수 있도록 ViewModel 함수 변경
-         */
-        composable(CSV_RESULT) {
-            CsvResultScreen(context, navController, resultViewModel)
-        } // 검사결과보기 페이지 -> csv 선택 후 자세한 정보
-        /* Todo - CsvResultScreen
-            결과 볼때 ViewModel에서 정보 추출하는것 만들기
-         */
+        composable(route = "${UPLOAD_RESULT}?leftcsv={l_csv}&rightcsv={r_csv}",
+            arguments = listOf(
+                navArgument("l_csv") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("r_csv") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) {
+            val resultViewModel: ResultViewModel = hiltViewModel()
 
-        composable(SENSOR_SETTING) {
-            SensorSettingScreen(navController, bluetoothViewModel, sensorViewModel)
-        } // 센서 연결 및 이름 선택
+            UploadResultScreen(
+                navController = navController,
+                l_csv = it.arguments?.getString("l_csv") ?: "",
+                r_csv = it.arguments?.getString("r_csv") ?: "",
+                resultViewModel = resultViewModel
+            )
+        }
 
-        composable(SENSOR_SYNC) {
-            SensorSyncScreen(navController, sensorViewModel)
-        }       // 센서 싱크 (100% 되면 자동으로 sensor_measure 페이지로 이동
-
-        composable(SENSOR_MEASURE) {
-            SensorMeasureScreen(navController, sensorViewModel, resultViewModel)
-        } //
     }
 }

@@ -1,6 +1,6 @@
 //@file:JvmName("CsvSelectScreenKt")
 
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.upload
 
 import android.content.Context
 import android.util.Log
@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,61 +49,50 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
-import com.co77iri.imu_walking_pattern.App.Companion.selectedProfile
 import com.co77iri.imu_walking_pattern.MENU_SELECT
-import com.co77iri.imu_walking_pattern.interfaces.JsonUploadService
 import com.co77iri.imu_walking_pattern.models.CSVData
-import com.co77iri.imu_walking_pattern.models.UploadJsonData
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileLegacyViewModel
-import com.co77iri.imu_walking_pattern.ui.profile.ProfileViewModel
-import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CsvResultScreen(
-    context: Context,
+fun UploadResultScreen(
     navController: NavController,
+    l_csv: String,
+    r_csv: String,
     resultViewModel: ResultViewModel
 ) {
+    resultViewModel.updateCSVDataFromFile(l_csv)
+    resultViewModel.updateCSVDataFromFile(r_csv)
+
+    val context = LocalContext.current
+
     val selectedProfile = App.selectedProfile!!
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
     var showDialog by remember { mutableStateOf(false) }
 
-    val firstCSVData = resultViewModel.selectedData.value?.get(0)
-    val totalSteps = resultViewModel.getTotalStep()
+    // 23-10-04
+    val leftData: CSVData = resultViewModel.updateCSVDataFromFile(l_csv)
+    val leftSteps = resultViewModel.getStep(leftData)
 
-    val totalTimeInSeconds = firstCSVData!!.getDataLength() / 60
+    val rightData: CSVData = resultViewModel.updateCSVDataFromFile(r_csv)
+    val rightSteps = resultViewModel.getStep(rightData)
+
+    val firstCSVData = leftData
+    val totalSteps = resultViewModel.getTotalStep(leftData, rightData)
+
+    val totalTimeInSeconds = firstCSVData.getDataLength() / 60.toDouble()
     val cadence = (totalSteps.toDouble() / (firstCSVData.getDataLength() / 60)) * 60
 
-    val totalWalkingDistance = resultViewModel.calculateTotalWalkingDistance()
+    val totalWalkingDistance = resultViewModel.calculateTotalWalkingDistance(leftData, rightData)
     val avgWalkingDistance: Double = totalWalkingDistance / totalSteps
     val avgDistanceDivHeight: Double = avgWalkingDistance / selectedProfile.height.toDouble()
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
     val gaitCycleDuration = totalTimeInSeconds / totalSteps.toDouble()
-
-    // 23-10-04
-    val leftData: CSVData = resultViewModel.selectedData.value?.get(0)!!
-    val leftSteps = resultViewModel.getStep(leftData)
-
-    val rightData: CSVData = resultViewModel.selectedData.value?.get(1)!!
-    val rightSteps = resultViewModel.getStep(rightData)
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -129,12 +119,16 @@ fun CsvResultScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        val myDir = File(context.filesDir, "not_uploaded")
-                        val filePath = myDir.toString() + "/" + resultViewModel.uploadTitle.value
+                        val csv_l = File(l_csv)
+                        val csv_r = File(r_csv)
 
-                        Log.d("test", filePath)
-                        val csv_l = File(filePath + "_L.csv")
-                        val csv_r = File(filePath + "_R.csv")
+                        resultViewModel.uploadCsvFiles(
+                            getCurrentDateTime(),
+                            totalTimeInSeconds,
+                            1,
+                            csv_l,
+                            csv_r
+                        )
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Share,
@@ -161,9 +155,7 @@ fun CsvResultScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-
             Column(
-//                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp))
             {
                 Text(
@@ -576,4 +568,10 @@ fun CsvResultScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
+}
+
+
+private fun getCurrentDateTime(): String {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    return dateFormat.format(Date())
 }

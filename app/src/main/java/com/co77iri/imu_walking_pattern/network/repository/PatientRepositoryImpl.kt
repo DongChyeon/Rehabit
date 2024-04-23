@@ -46,9 +46,8 @@ class PatientRepositoryImpl @Inject constructor(
         val requestFile_l = csvFileLeft.asRequestBody("multipart/form-data".toMediaTypeOrNull())
         val requestFile_r = csvFileRight.asRequestBody("multipart/form-data".toMediaTypeOrNull())
 
-// MultipartBody.Part 객체 생성
-        val body_l = MultipartBody.Part.createFormData("csvFile_l", csvFileLeft.name, requestFile_l)
-        val body_r = MultipartBody.Part.createFormData("csvFile_r", csvFileRight.name, requestFile_r)
+        val body_l = MultipartBody.Part.createFormData("csvFileLeft", csvFileLeft.name, requestFile_l)
+        val body_r = MultipartBody.Part.createFormData("csvFileRight", csvFileRight.name, requestFile_r)
 
         val jsonData = jsonObjectBuilder.toString().toRequestBody("application/json".toMediaType())
 

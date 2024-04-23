@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.xsens.dot.android.sdk.BuildConfig
 import com.xsens.dot.android.sdk.events.XsensDotData
 import com.xsens.dot.android.sdk.interfaces.XsensDotDeviceCallback
@@ -22,18 +23,21 @@ import com.xsens.dot.android.sdk.models.XsensDotDevice
 import com.xsens.dot.android.sdk.models.XsensDotPayload
 import com.xsens.dot.android.sdk.models.XsensDotSyncManager
 import com.xsens.dot.android.sdk.utils.XsensDotLogger
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
+@HiltViewModel
 @SuppressLint("MutableCollectionMutableState")
-class SensorViewModel(application: Application) : AndroidViewModel(application) {
-    @SuppressLint("StaticFieldLeak")
-    private val context: Context = getApplication<Application>().applicationContext
-
+class SensorViewModel @Inject constructor(
+    @ApplicationContext private val context: Context
+) : ViewModel() {
     var sensorList by mutableStateOf<SnapshotStateList<XsensDotDevice>>(mutableStateListOf())
     val isMeasuring: MutableState<Boolean> = mutableStateOf(false)
 
@@ -148,13 +152,6 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
         }
 
         override fun onXsensDotDataChanged(address: String, data: XsensDotData) {
-            Log.d("test123", "xsensDotDataChanged() - address = $address, data = $data")
-//            val t = data.sampleTimeFine
-//            val quaternion = data.quat
-//            val freeAcc = data.calFreeAcc
-
-//            _sensorData.value = _sensorData.value + data
-
             if( address == leftSensor.value!!.address ) {
 //                _LeftSensorData.value = _LeftSensorData.value + data
                 val updatedData = _LeftSensorData.value.toMutableList()
@@ -366,39 +363,19 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
             val fwVersion = device.firmwareVersion
             val address = device.address
             val tag = if( device.tag.isEmpty()) device.name else device.tag
-            var fileName = ""
 
             val myDir = File(context.filesDir, "not_uploaded")
 
-            if( address == leftSensor.value!!.address) {
-//                fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + address.takeLast(2) + "_L.csv"
+            var fileName = ""
+
+            if (address == leftSensor.value!!.address) {
                 fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + "_L.csv"
                 leftSensorFileName = fileName
-            } else if( address == rightSensor.value!!.address ) {
-//                fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + address.takeLast(2) + "_R.csv"
+            } else if (address == rightSensor.value!!.address) {
                 fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) +  "_R.csv"
                 rightSensorFileName = fileName
             }
 
-//            if( address == leftSensor.value!!.address) {
-//                fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + "_" + address.takeLast(2) + "_L.csv"
-//                leftSensorFileName = fileName
-//            } else if( address == rightSensor.value!!.address ) {
-//                fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + "_" + address.takeLast(2) + "_R.csv"
-//                rightSensorFileName = fileName
-//            }
-
-//            fileName = myDir.toString() + File.separator + SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) + "_" + address.takeLast(2) + ".csv"
-
-//            val dir = context.getExternalFilesDir(null)
-//            if( dir != null ) {
-////                    fileName = dir.absolutePath + File.separator + tag + "_" +
-////                            SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.getDefault()).format(Date()) +
-////                            ".csv"
-//                fileName = dir.absolutePath + File.separator + "not_uploaded" + File.separator +
-//                        SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) +
-//                        "_" + address.takeLast(2) + ".csv"
-//            }
             Log.d(TAG, "createFiles() - $fileName")
             val logger = XsensDotLogger(
                 context, XsensDotLogger.TYPE_CSV, XsensDotPayload.PAYLOAD_TYPE_EXTENDED_QUATERNION,
@@ -431,14 +408,9 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
             val tag = if( device.tag.isEmpty()) device.name else device.tag
             var fileName = ""
 
-
             if( context != null ) {
                 val dir = context.getExternalFilesDir(null)
                 if( dir != null ) {
-//                    fileName = dir.absolutePath + File.separator + tag + "_" +
-//                            SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.getDefault()).format(Date()) +
-//                            ".csv"
-//                    fileName = dir.absolutePath + File.separator + "calibration_" +
                     fileName = dir.absolutePath + File.separator + "calibration" + File.separator +
                             SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault()).format(Date()) +
                             "_" + address.takeLast(2) + ".csv"
@@ -493,60 +465,3 @@ class SensorViewModel(application: Application) : AndroidViewModel(application) 
         private const val SYNCING_REQUEST_CODE = 1001
     }
 }
-
-
-/* Deprecated Functions ...
-
-    fun disconnectAllSensors() {
-        if( sensorList != null ) { //
-            synchronized(LOCKER) {
-                val it: Iterator<XsensDotDevice> = sensorList!!.iterator() //
-                while( it.hasNext() ) {
-                    val device = it.next()
-                    device.disconnect()
-                }
-            }
-        }
-    }
-
-    fun cancelReconnection(address: String) {
-        if( sensorList != null ) { //
-            for( device in sensorList ) { //
-                if( device.address == address ) {
-                    device.cancelReconnecting()
-                    break
-                }
-            }
-        }
-    }
-
-    fun checkConnection(): Boolean {
-        val devices = sensorList //
-
-        if( devices != null ) {
-            for( device in devices ) {
-                val state = device.connectionState
-                if( state != XsensDotDevice.CONN_STATE_CONNECTED ) return false
-            }
-        } else {
-            return false
-        }
-        return true
-    }
-
-    fun setStates(plot: Int, log: Int) {
-        val devices = sensorList
-        if( devices != null ) {
-            for( device in devices ) {
-                device.plotState = plot
-                device.logState = log
-            }
-        }
-    }
-
-    fun removeAllDevice() {
-        if( sensorList != null ) {
-            synchronized(LOCKER) { sensorList.clear() }
-        }
-    }
- */

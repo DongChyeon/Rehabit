@@ -3,11 +3,9 @@ package com.co77iri.imu_walking_pattern.ui.sensor
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,10 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,16 +41,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.CSV_RESULT
-import com.co77iri.imu_walking_pattern.PROFILE
-import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
+import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -64,13 +55,13 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.xsens.dot.android.sdk.events.XsensDotData
 import com.xsens.dot.android.sdk.models.XsensDotDevice
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SensorMeasureScreen(
     navController: NavController,
-    sensorViewModel: SensorViewModel,
-    resultViewModel: ResultViewModel
+    sensorViewModel: SensorViewModel
 ) {
     // ExposedDropdownMenuBox
     var expanded by remember { mutableStateOf(false) }
@@ -78,7 +69,6 @@ fun SensorMeasureScreen(
     var selectedText by remember { mutableStateOf("왼발 기기를 선택해주세요" )}
     var selectedText2 by remember { mutableStateOf("오른발 기기를 선택해주세요") }
 
-//    val sensorData by sensorViewModel.sensorData.collectAsState()
     val leftSensorData by sensorViewModel.LeftSensorData.collectAsState()
     val rightSensorData by sensorViewModel.RightSensorData.collectAsState()
 
@@ -142,14 +132,13 @@ fun SensorMeasureScreen(
                         sensorViewModel.closeFiles()
                         sensorViewModel.setMeasurement(sensorViewModel.isMeasuring.value)
 
-                        resultViewModel.updateCSVDataFromFile(sensorViewModel.leftSensorFileName!!)
-                        resultViewModel.updateCSVDataFromFile(sensorViewModel.rightSensorFileName!!)
-                        navController.navigate(CSV_RESULT)
+                        navController.navigate("${UPLOAD_RESULT}?leftcsv=${sensorViewModel.leftSensorFileName}&rightcsv=${sensorViewModel.rightSensorFileName}")
                     }
                 }
             ) {
                 Text(
                     text = if (isMeasuring) "검사 종료" else "검사 시작",
+                    fontSize = 18.sp,
                     color = White
                 )
             }

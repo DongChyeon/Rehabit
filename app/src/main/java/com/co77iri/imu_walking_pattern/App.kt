@@ -9,6 +9,7 @@ class App : Application() {
 
     companion object {
         var selectedProfile: ClinicalPatient? = null
+        var isBluetoothEnabled: Boolean = false
     }
 
     override fun onCreate() {

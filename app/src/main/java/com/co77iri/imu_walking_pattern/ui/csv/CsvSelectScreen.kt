@@ -1,4 +1,4 @@
-package com.co77iri.imu_walking_pattern.views
+package com.co77iri.imu_walking_pattern.ui.csv
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -23,20 +25,28 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.co77iri.imu_walking_pattern.CSV_RESULT
-import com.co77iri.imu_walking_pattern.viewmodels.ResultViewModel
-import java.io.File
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
+import com.co77iri.imu_walking_pattern.App
+import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
+import com.co77iri.imu_walking_pattern.network.models.response.ParkinsonTestData
+import com.co77iri.imu_walking_pattern.ui.component.SnackBar
+import com.co77iri.imu_walking_pattern.ui.profile.showSnackBar
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -44,18 +54,52 @@ import java.util.Locale
 @Composable
 fun CsvSelectScreen(
     navController: NavController,
-    resultViewModel: ResultViewModel
+    viewModel: CsvSelectViewModel
 ) {
-    val context = LocalContext.current
-    val csvDir = File(context.filesDir, "not_uploaded")
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val effectFlow = viewModel.effect
+
+    val results = uiState.results.collectAsLazyPagingItems()
+    val resultsRefreshState = results.loadState.refresh
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior( rememberTopAppBarState() )
 
-    LaunchedEffect(Unit) {
-        resultViewModel.loadcsvFiles(csvDir)
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = scaffoldState.snackbarHostState
+
+    LaunchedEffect(resultsRefreshState) {
+        if (resultsRefreshState is LoadState.Error) {
+            val errorMessage = resultsRefreshState.error.message ?: "네트워크 오류가 발생했습니다."
+            showSnackBar(snackbarHostState, errorMessage)
+        }
+    }
+
+    LaunchedEffect(true) {
+        val selectedProfile = App.selectedProfile!!
+        viewModel.getParkinsonTestDataList(selectedProfile.clinicalPatientId)
+
+        effectFlow.collectLatest { effect ->
+            when (effect) {
+                is CsvSelectContract.Effect.NavigateTo -> {
+                    navController.navigate(effect.destination, effect.navOptions)
+                }
+
+                is CsvSelectContract.Effect.NavigateUp -> {
+                    navController.navigateUp()
+                }
+
+                is CsvSelectContract.Effect.ShowSnackBar -> {
+                    showSnackBar(snackbarHostState, effect.message)
+                }
+            }
+        }
     }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackBar(snackbarHostState)
+        },
         topBar = {
             CenterAlignedTopAppBar (
                 title = {
@@ -69,7 +113,7 @@ fun CsvSelectScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
@@ -77,7 +121,6 @@ fun CsvSelectScreen(
                         )
                     }
                 },
-
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
             )
@@ -91,53 +134,47 @@ fun CsvSelectScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 20.dp)
                 .fillMaxSize(),
-
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-
-            Column(
+            LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp))
-            {
-                // TODO : forEach로
-                resultViewModel.csvFiles.value.forEach { session ->
-                    ResultCard(navController, resultViewModel, session)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(
+                    count = results.itemCount,
+                    key = results.itemKey(),
+                    contentType = results.itemContentType()
+                ) { index ->
+                    results[index]?.let {
+                        ResultCard(
+                            naviageToCsvResult = {
+                                navController.navigate(UPLOAD_RESULT)
+                            },
+                            result = it
+                        )
+                    }
                 }
-//                tmpCard()
-//                tmpCard()
-//                tmpCard()
-//                tmpCard()
             }
-//            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
 fun ResultCard(
-    navController: NavController,
-    resultViewModel: ResultViewModel,
-    session: ResultViewModel.CsvSession
+    naviageToCsvResult: () -> Unit,
+    result: ParkinsonTestData
 ) {
-    val (formattedDate, formattedTime) = formatDateAndTime(session.leftFile.name)
-    val (titleDate, titleTime) = formatTitle(session.leftFile.name)
+    val (formattedDate, formattedTime) = formatDateAndTime(result.testDateAndTime)
 
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFE2E2E2)
         ),
         modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(80.dp)
             .clickable {
-                resultViewModel.uploadTitle.value = titleDate + "_" + titleTime
-                resultViewModel.updateCSVDataFromFile(session.leftFile.path)
-                resultViewModel.updateCSVDataFromFile(session.rightFile.path)
-
-                navController.navigate(CSV_RESULT)
+                naviageToCsvResult()
             }
-
     ) {
         Row(
             modifier = Modifier
@@ -147,7 +184,6 @@ fun ResultCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-//                            horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
@@ -167,27 +203,9 @@ fun ResultCard(
 
 fun formatDateAndTime(filename: String): Pair<String, String> {
     val cleanedFilename = filename.substringBeforeLast("_") // "_L.csv" 또는 "_R.csv" 제거
-    val originalFormat = SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault())
+    val originalFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
     val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일", Locale.getDefault())
     val timeFormat = SimpleDateFormat("HH시 mm분 측정 결과", Locale.getDefault())
-
-    return try {
-        val date = originalFormat.parse(cleanedFilename)
-        val formattedDate = dateFormat.format(date ?: return Pair("", ""))
-        val formattedTime = timeFormat.format(date)
-
-        Pair(formattedDate, formattedTime)
-    } catch (e: Exception) {
-        Log.e("CsvSelectScreen", "formatDateAndTime() - ${e.message}")
-        Pair("", "")  // 형식이 맞지 않는 경우 빈 문자열 반환
-    }
-}
-
-fun formatTitle(filename: String): Pair<String, String> {
-    val cleanedFilename = filename.substringBeforeLast("_") // "_L.csv" 또는 "_R.csv" 제거
-    val originalFormat = SimpleDateFormat("yyMMdd_HHmm", Locale.getDefault())
-    val dateFormat = SimpleDateFormat("yyMMdd", Locale.getDefault())
-    val timeFormat = SimpleDateFormat("HHmm", Locale.getDefault())
 
     return try {
         val date = originalFormat.parse(cleanedFilename)
