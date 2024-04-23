@@ -2,8 +2,10 @@ package com.co77iri.imu_walking_pattern.ui.upload
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.navOptions
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.BaseViewModel
+import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
@@ -62,8 +64,15 @@ class UploadResultViewModel @Inject constructor(
             when (it) {
                 is ApiResult.Success -> {
                     postEffect(UploadResultContract.Effect.ShowSnackBar("업로드 성공!"))
-                    delay(500)
-                    postEffect(UploadResultContract.Effect.NavigateUp)
+                    delay(200)
+                    postEffect(UploadResultContract.Effect.NavigateTo(
+                        destination = MENU_SELECT,
+                        navOptions = navOptions {
+                            popUpTo(MENU_SELECT) {
+                                inclusive = true
+                            }
+                        }
+                    ))
                 }
 
                 is ApiResult.ApiError -> {

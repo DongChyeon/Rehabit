@@ -104,6 +104,7 @@ fun SensorMeasureScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF424651),
                     contentColor = White
