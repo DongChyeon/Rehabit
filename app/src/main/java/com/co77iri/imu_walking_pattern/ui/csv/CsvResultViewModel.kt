@@ -7,12 +7,16 @@ import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
 import com.github.doyaaaaaken.kotlincsv.client.CsvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.context.InsufficientFieldsRowBehaviour
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.URL
 import javax.inject.Inject
 
@@ -32,16 +36,14 @@ class CsvResultViewModel @Inject constructor(
                 is ApiResult.Success -> {
                     val result = it.data.result
 
-                    runBlocking {
-                        updateState(
-                            currentState.copy(
-                                testDateAndTime = result.testDateAndTime,
-                                parkinsonStage = result.parkinsonStage,
-                                csvDataLeft = updateCSVDataFromFile(result.csvFileUrlLeft),
-                                csvDataRight = updateCSVDataFromFile(result.csvFileUrlRight)
-                            )
+                    updateState(
+                        currentState.copy(
+                            testDateAndTime = result.testDateAndTime,
+                            parkinsonStage = result.parkinsonStage,
+                            csvDataLeft = updateCSVDataFromFile(result.csvFileUrlLeft),
+                            csvDataRight = updateCSVDataFromFile(result.csvFileUrlRight)
                         )
-                    }
+                    )
                 }
 
                 is ApiResult.ApiError -> {
@@ -57,36 +59,43 @@ class CsvResultViewModel @Inject constructor(
 
     val allSquaresForBothFeet = mutableListOf<List<Double>>() // 왼발 오른발 저장
 
-    suspend fun updateCSVDataFromFile(csvUrl: String): CSVData {
+    suspend fun updateCSVDataFromFile(fileUrl: String): CSVData {
         return withContext(Dispatchers.IO) {
+            val updateData = CSVData()
+
             try {
-                val url = URL(csvUrl)
-                val csvData = CsvReader().readAllWithHeader(url.openStream())
+                val url = URL(fileUrl)
+                val connection = url.openConnection()
+                val inputStream = connection.getInputStream()
+                val reader = BufferedReader(InputStreamReader(inputStream))
 
-                Log.d("debugging", "$csvData")
+                repeat(11) { reader.readLine() }
 
-                val updateData = CSVData()
+                reader.readLine()
 
-                csvData.forEachIndexed { index, row ->
-                    // Skip the first 12 lines (1~11번 라인은 설명 및 헤더)
-                    if (index < 11) return@forEachIndexed
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    val parts = line?.split(",") ?: continue
+                    if (parts.size >= 9) {
+                        val freeAccX = parts[6].trim().toDoubleOrNull()
+                        val freeAccY = parts[7].trim().toDoubleOrNull()
+                        val freeAccZ = parts[8].trim().toDoubleOrNull()
 
-                    // Parse the data starting from the 13th line
-                    val freeAccX = row["Column7"]?.trim()?.toDoubleOrNull()
-                    val freeAccY = row["Column8"]?.trim()?.toDoubleOrNull()
-                    val freeAccZ = row["Column9"]?.trim()?.toDoubleOrNull()
-
-                    if (freeAccX != null && freeAccY != null && freeAccZ != null) {
-                        updateData.FreeAccX.add(freeAccX)
-                        updateData.FreeAccY.add(freeAccY)
-                        updateData.FreeAccZ.add(freeAccZ)
+                        if (freeAccX != null && freeAccY != null && freeAccZ != null) {
+                            updateData.FreeAccX.add(freeAccX)
+                            updateData.FreeAccY.add(freeAccY)
+                            updateData.FreeAccZ.add(freeAccZ)
+                        }
                     }
                 }
+
+                reader.close()
+                inputStream.close()
 
                 updateData
             } catch (e: Exception) {
                 e.printStackTrace()
-                CSVData() // Return an empty CSVData object in case of an error
+                CSVData()
             }
         }
     }
