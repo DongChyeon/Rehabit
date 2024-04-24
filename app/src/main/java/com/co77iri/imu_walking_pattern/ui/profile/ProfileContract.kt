@@ -16,8 +16,8 @@ class ProfileContract {
 
     data class State(
         val isLoading: Boolean = false,
-        val lastLoginMethod: String? = null,
-
+        val searchWord: String = "",
+        val placeholderText: String = "emr 번호를 입력해서 환자를 검색하세요",
         val profiles: Flow<PagingData<ClinicalPatient>> = flowOf(
             PagingData.from(
                 emptyList(),

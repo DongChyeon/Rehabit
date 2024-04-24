@@ -6,9 +6,6 @@ import com.co77iri.imu_walking_pattern.BaseViewModel
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
-import com.github.doyaaaaaken.kotlincsv.client.CsvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.context.InsufficientFieldsRowBehaviour
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.onStart

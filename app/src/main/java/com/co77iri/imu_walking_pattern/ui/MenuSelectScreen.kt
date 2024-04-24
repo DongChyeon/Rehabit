@@ -76,7 +76,7 @@ fun MenuSelectScreen(
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,
                                 contentDescription = "뒤로가기",
-                                tint = Color.White
+                                tint = White
                             )
                         }
                     },

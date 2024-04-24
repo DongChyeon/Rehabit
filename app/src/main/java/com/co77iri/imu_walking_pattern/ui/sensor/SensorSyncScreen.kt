@@ -69,11 +69,11 @@ fun SensorSyncScreen(
                 CircularProgressIndicator(
                     modifier = Modifier.size(150.dp)
                 )
-                Text(
+                /*Text(
                     "${sensorViewModel.syncProgress.value}%",
                     modifier = Modifier.align(Alignment.Center),
                     fontSize = 40.sp
-                )
+                )*/
             }
         }
     }

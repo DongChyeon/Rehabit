@@ -6,6 +6,7 @@ import androidx.navigation.navOptions
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.BaseViewModel
 import com.co77iri.imu_walking_pattern.MENU_SELECT
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.network.adapter.ApiResult
 import com.co77iri.imu_walking_pattern.network.repository.PatientRepository
@@ -66,9 +67,9 @@ class UploadResultViewModel @Inject constructor(
                     postEffect(UploadResultContract.Effect.ShowSnackBar("업로드 성공!"))
                     delay(200)
                     postEffect(UploadResultContract.Effect.NavigateTo(
-                        destination = MENU_SELECT,
+                        destination = PROFILE,
                         navOptions = navOptions {
-                            popUpTo(MENU_SELECT) {
+                            popUpTo(PROFILE) {
                                 inclusive = true
                             }
                         }

@@ -46,7 +46,7 @@ interface PatientService {
         @Query("pageSize") pageSize: Int = 10
     ): ApiResult<ClinicalPatientListResponse>
 
-    @GET("v1/cliniicalpatients/{emrPatientNumber}")
+    @GET("v1/clinicalpatients/{emrPatientNumber}")
     suspend fun getClinicalPatientByEmrPatientNumber(
         @Path("emrPatientNumber") emrPatientNumber: String
     ): ApiResult<ClinicalPatientResponse>

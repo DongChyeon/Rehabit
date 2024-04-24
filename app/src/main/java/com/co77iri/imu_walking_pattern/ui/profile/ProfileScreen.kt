@@ -3,6 +3,7 @@ package com.co77iri.imu_walking_pattern.ui.profile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ import com.co77iri.imu_walking_pattern.ADD_PROFILE
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.MENU_SELECT
 import com.co77iri.imu_walking_pattern.ui.component.ProfileCard
+import com.co77iri.imu_walking_pattern.ui.component.SearchTextField
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
 import kotlinx.coroutines.flow.collectLatest
 
@@ -93,18 +95,36 @@ fun ProfileScreen(
             SnackBar(snackbarHostState)
         },
         topBar = {
-            CenterAlignedTopAppBar (
-                title = {
-                    Text(
-                        "PROFILE",
-                        color = White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp
+            Column {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            "PROFILE",
+                            color = White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp
+                        )
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.smallTopAppBarColors(
+                        containerColor = Color(
+                            0xFF2F3239
+                        )
                     )
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
-            )
+                )
+
+                SearchTextField(
+                    modifier = Modifier.padding(
+                        top = 10.dp,
+                        start = 20.dp,
+                        end = 20.dp
+                    ),
+                    value = uiState.searchWord,
+                    onValueChange = viewModel::updateSearchWord,
+                    placeholderText = uiState.placeholderText,
+                    onSearch = { viewModel.searchProfile() }
+                )
+            }
         },
     ) { innerPadding ->
         Box(
