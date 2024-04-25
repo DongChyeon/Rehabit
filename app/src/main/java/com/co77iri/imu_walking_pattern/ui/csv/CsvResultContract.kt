@@ -13,6 +13,18 @@ class CsvResultContract {
         val testDateAndTime: String = "",
         val totalTimeInSeconds: String = "",
         val parkinsonStage: Int = 1,
+        val averageSpeed: Double = 0.0,
+        val cadence: Int = 0,
+        val gaitCycle: Double = 0.0,
+        val totalSteps: Int = 0,
+        val leftSteps: Int = 0,
+        val rightSteps: Int = 0,
+        val strideLength: Double = 0.0,
+        val leftStrideLength: Double = 0.0,
+        val rightStrideLength: Double = 0.0,
+        val stepLength: Double = 0.0,
+        val leftStepLength: Double = 0.0,
+        val rightStepLength: Double = 0.0,
         val csvDataLeft: CSVData = CSVData(),
         val csvDataRight: CSVData = CSVData()
     ) : UiState

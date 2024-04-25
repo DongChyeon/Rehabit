@@ -284,30 +284,6 @@ fun UploadResultScreen(
                             )
                         }
 
-                        /*
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp)
-                                .padding(top = 20.dp, bottom = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "파킨슨 단계",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                text = "${uiState.parkinsonStage} 단계",
-                                fontSize = 18.sp,
-                                modifier = Modifier,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                         */
-
                         // 라인
                         Box(
                             modifier = Modifier
