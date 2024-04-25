@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.CSV_SELECT
+import com.co77iri.imu_walking_pattern.SENSOR_MEASURE
 import com.co77iri.imu_walking_pattern.SENSOR_ROUTE
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,7 +168,7 @@ fun MenuSelectScreen(
                 MenuSelectCustomBtn(
                     btnText = "보행 검사 시작",
                     navController = navController,
-                    navDestination = SENSOR_ROUTE
+                    navDestination = SENSOR_MEASURE
                 )
             }
         }

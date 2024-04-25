@@ -91,7 +91,6 @@ class UploadResultViewModel @Inject constructor(
             when (it) {
                 is ApiResult.Success -> {
                     postEffect(UploadResultContract.Effect.ShowSnackBar("업로드 성공!"))
-                    delay(200)
                     postEffect(UploadResultContract.Effect.NavigateTo(
                         destination = PROFILE,
                         navOptions = navOptions {

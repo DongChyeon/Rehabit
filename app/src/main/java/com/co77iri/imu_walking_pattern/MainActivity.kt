@@ -34,6 +34,8 @@ import com.co77iri.imu_walking_pattern.ui.upload.UploadResultScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectViewModel
 import com.co77iri.imu_walking_pattern.ui.profile.profileGraph
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorMeasureScreen
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.co77iri.imu_walking_pattern.ui.sensor.sensorGraph
 import com.xsens.dot.android.sdk.XsensDotSdk
 import dagger.hilt.android.AndroidEntryPoint
@@ -148,19 +150,29 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavHost() {
-    val context = LocalContext.current
-
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = PROFILE_ROUTE) { // 테스트
+    val sensorViewModel: SensorViewModel = hiltViewModel()
 
+    NavHost(navController, startDestination = SENSOR_ROUTE) { // 테스트
         profileGraph(navController = navController)
 
-        sensorGraph(navController =  navController)
+        sensorGraph(
+            navController = navController,
+            sensorViewModel = sensorViewModel
+        )
 
         composable(MENU_SELECT) {
             MenuSelectScreen(navController)
         } //
+
+        composable(SENSOR_MEASURE) {
+            // 센서 측정 화면
+            SensorMeasureScreen(
+                navController = navController,
+                sensorViewModel = sensorViewModel
+            )
+        }
 
         composable(CSV_SELECT) {
             val csvSelectViewModel: CsvSelectViewModel = hiltViewModel()

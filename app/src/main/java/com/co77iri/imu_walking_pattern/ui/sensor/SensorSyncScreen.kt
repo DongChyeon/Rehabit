@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.PROFILE_ROUTE
 import com.co77iri.imu_walking_pattern.SENSOR_MEASURE
 import com.co77iri.imu_walking_pattern.SENSOR_SYNC
 
@@ -80,13 +81,7 @@ fun SensorSyncScreen(
 
     LaunchedEffect(sensorViewModel.syncStatus.value) {
         if (sensorViewModel.syncStatus.value >= 2) {
-            navController.navigate(
-                SENSOR_MEASURE
-            ) {
-                popUpTo(SENSOR_SYNC) {
-                    inclusive = true
-                }
-            }
+            navController.navigate(PROFILE_ROUTE)
         }
     }
 }

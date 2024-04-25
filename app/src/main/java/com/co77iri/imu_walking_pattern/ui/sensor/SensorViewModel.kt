@@ -249,6 +249,12 @@ class SensorViewModel @Inject constructor(
 
     private val syncManager: XsensDotSyncManager = XsensDotSyncManager.getInstance(dotSyncCallback)
 
+    fun initSensorData() {
+        isMeasuring.value = false
+        _LeftSensorData.value = emptyList()
+        _RightSensorData.value = emptyList()
+    }
+
     // MAC Address 리스트에서 XsensDotDevice Object를 가져온다.
     fun getSensor(address: String): XsensDotDevice? {
         val devices = sensorList //
