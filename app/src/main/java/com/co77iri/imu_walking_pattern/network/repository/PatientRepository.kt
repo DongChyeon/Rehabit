@@ -21,6 +21,18 @@ interface PatientRepository {
         testDateAndTime: String,
         testDuration: Double,
         parkinsonStage: Int,
+        averageSpeed: Double,
+        cadence: Int,
+        gaitCycle: Double,
+        totalSteps: Int,
+        leftSteps: Int,
+        rightSteps: Int,
+        strideLength: Double,
+        leftStrideLength: Double,
+        rightStrideLength: Double,
+        stepLength: Double,
+        leftStepLength: Double,
+        rightStepLength: Double,
         csvFileLeft: File,
         csvFileRight: File
     ): Flow<ApiResult<BaseReponse>>

@@ -34,6 +34,18 @@ class PatientRepositoryImpl @Inject constructor(
         testDateAndTime: String,
         testDuration: Double,
         parkinsonStage: Int,
+        averageSpeed: Double,
+        cadence: Int,
+        gaitCycle: Double,
+        totalSteps: Int,
+        leftSteps: Int,
+        rightSteps: Int,
+        strideLength: Double,
+        leftStrideLength: Double,
+        rightStrideLength: Double,
+        stepLength: Double,
+        leftStepLength: Double,
+        rightStepLength: Double,
         csvFileLeft: File,
         csvFileRight: File
     ): Flow<ApiResult<BaseReponse>> {
@@ -41,6 +53,18 @@ class PatientRepositoryImpl @Inject constructor(
             put("testDateAndTime", testDateAndTime)
             put("testDuration", testDuration)
             put("parkinsonStage", parkinsonStage)
+            put("averageSpeed", averageSpeed)
+            put("cadence", cadence)
+            put("gaitCycle", gaitCycle)
+            put("totalSteps", totalSteps)
+            put("leftSteps", leftSteps)
+            put("rightSteps", rightSteps)
+            put("strideLength", strideLength)
+            put("leftStrideLength", leftStrideLength)
+            put("rightStrideLength", rightStrideLength)
+            put("stepLength", stepLength)
+            put("leftStepLength", leftStepLength)
+            put("rightStepLength", rightStepLength)
         }
 
         val requestFile_l = csvFileLeft.asRequestBody("multipart/form-data".toMediaTypeOrNull())

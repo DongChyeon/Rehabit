@@ -49,18 +49,44 @@ class UploadResultViewModel @Inject constructor(
     }
 
     fun uploadCsvFiles(
-        leftFile: File, rightFile: File
+        averageSpeed: Double,
+        cadence: Int,
+        gaitCycle: Double,
+        totalSteps: Int,
+        leftSteps: Int,
+        rightSteps: Int,
+        strideLength: Double,
+        leftStrideLength: Double,
+        rightStrideLength: Double,
+        stepLength: Double,
+        leftStepLength: Double,
+        rightStepLength: Double,
+        leftFile: File,
+        rightFile: File
     ) = viewModelScope.launch {
         patientRepository.postParksonTestData(
-            App.selectedProfile?.clinicalPatientId!!,
-            currentState.testDateAndTime,
-            currentState.totalTimeInSeconds,
-            try {
+            patientId = App.selectedProfile?.clinicalPatientId!!,
+            testDateAndTime = currentState.testDateAndTime,
+            testDuration = currentState.totalTimeInSeconds,
+            parkinsonStage = try {
                 currentState.parkinsonStage.toInt()
             } catch (e: Exception) {
                 0
             },
-            leftFile, rightFile
+            averageSpeed = averageSpeed,
+            cadence = cadence,
+            gaitCycle = gaitCycle,
+            totalSteps = totalSteps,
+            leftSteps = leftSteps,
+            rightSteps = rightSteps,
+            strideLength = strideLength,
+            leftStrideLength = leftStrideLength,
+            rightStrideLength = rightStrideLength,
+            stepLength = stepLength,
+            leftStepLength = leftStepLength,
+            rightStepLength = rightStepLength,
+            csvFileLeft = leftFile,
+            csvFileRight = rightFile
         ).collect {
             when (it) {
                 is ApiResult.Success -> {
@@ -126,6 +152,13 @@ class UploadResultViewModel @Inject constructor(
         return updateData
     }
 
+    fun getStep(csvData: CSVData): Int {
+        val peaks: Pair<List<Double>, List<Int>> = csvData.myFindPeaks()
+        val steps = peaks.second.size
+
+        return steps
+    }
+
     fun getTotalStep(
         leftCSVData: CSVData,
         rightCSVData: CSVData
@@ -139,6 +172,34 @@ class UploadResultViewModel @Inject constructor(
         val totalSteps = allPeaks.sumOf { it.second.size }
 
         return totalSteps
+    }
+
+    fun calculateTotalWalkingDistance(
+        leftCSVData: CSVData,
+        rightCSVData: CSVData
+    ): Double {
+        updateAllStepsSquaredSums(
+            leftCSVData, rightCSVData
+        ) // 먼저 모든 제곱 합을 업데이트합니다.
+
+        val calibrationSquaredSum = try {
+            allSquaresForBothFeet[0][0]
+        } catch (e: Exception) {
+            0.0
+        }   // 왼발의 첫 걸음 제곱 합으로 대체
+
+        var totalDistance = 0.0
+
+        allSquaresForBothFeet.forEach { squaredSumsForOneFoot ->
+            squaredSumsForOneFoot.forEach { squaredSum ->
+                totalDistance += calculateStrideLengthFromSquaredSum(squaredSum, calibrationSquaredSum)
+            }
+        }
+
+        // 총 걸음 수에서 시작과 끝의 걸음을 제외하기 위해 2 걸음의 거리를 뺍니다.
+        val avgStrideLength = totalDistance / (getTotalStep(leftCSVData, rightCSVData) - 2)
+
+        return avgStrideLength * (getTotalStep(leftCSVData, rightCSVData) - 2)
     }
 
     private fun updateAllStepsSquaredSums(
