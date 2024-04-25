@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.MENU_SELECT
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
 import com.co77iri.imu_walking_pattern.ui.profile.showSnackBar
 import com.co77iri.imu_walking_pattern.ui.upload.formatDate
@@ -111,6 +113,21 @@ fun CsvResultScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate(PROFILE) {
+                            popUpTo(PROFILE) {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "Share",
+                            tint = Color.White
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF2F3239))
             )
@@ -123,17 +140,17 @@ fun CsvResultScreen(
                     color = Color(0xFFF3F3F3)
                 )
                 .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .padding(horizontal = 20.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 100.dp)
                     .verticalScroll(rememberScrollState()), // 스크롤 추가
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column(
+                    modifier = Modifier.padding(top = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.PROFILE_ROUTE
 import com.co77iri.imu_walking_pattern.SENSOR_MEASURE
+import com.co77iri.imu_walking_pattern.SENSOR_SETTING
 import com.co77iri.imu_walking_pattern.SENSOR_SYNC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,7 +82,11 @@ fun SensorSyncScreen(
 
     LaunchedEffect(sensorViewModel.syncStatus.value) {
         if (sensorViewModel.syncStatus.value >= 2) {
-            navController.navigate(PROFILE_ROUTE)
+            navController.navigate(PROFILE_ROUTE) {
+                popUpTo(SENSOR_SYNC) {
+                    inclusive = true
+                }
+            }
         }
     }
 }

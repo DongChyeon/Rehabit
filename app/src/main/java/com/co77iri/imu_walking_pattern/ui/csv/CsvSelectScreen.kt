@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,6 +44,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.CSV_RESULT
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.co77iri.imu_walking_pattern.network.models.response.ParkinsonTestData
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
@@ -118,6 +120,21 @@ fun CsvSelectScreen(
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
+                            tint = White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate(PROFILE) {
+                            popUpTo(PROFILE) {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "Share",
                             tint = White
                         )
                     }

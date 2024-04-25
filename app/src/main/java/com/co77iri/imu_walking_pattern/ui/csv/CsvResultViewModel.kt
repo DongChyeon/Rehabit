@@ -37,6 +37,18 @@ class CsvResultViewModel @Inject constructor(
                         currentState.copy(
                             testDateAndTime = result.testDateAndTime,
                             parkinsonStage = result.parkinsonStage,
+                            averageSpeed = result.averageSpeed,
+                            cadence = result.cadence,
+                            gaitCycle = result.gaitCycle,
+                            totalSteps = result.totalSteps,
+                            leftSteps = result.leftSteps,
+                            rightSteps = result.rightSteps,
+                            strideLength = result.strideLength,
+                            leftStrideLength = result.leftStrideLength,
+                            rightStrideLength = result.rightStrideLength,
+                            stepLength = result.stepLength,
+                            leftStepLength = result.leftStepLength,
+                            rightStepLength = result.rightStepLength,
                             csvDataLeft = updateCSVDataFromFile(result.csvFileUrlLeft),
                             csvDataRight = updateCSVDataFromFile(result.csvFileUrlRight)
                         )

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,7 @@ import androidx.navigation.NavController
 import com.co77iri.imu_walking_pattern.App
 import com.co77iri.imu_walking_pattern.App.Companion.selectedProfile
 import com.co77iri.imu_walking_pattern.MENU_SELECT
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.co77iri.imu_walking_pattern.models.CSVData
 import com.co77iri.imu_walking_pattern.ui.component.SnackBar
@@ -164,6 +166,21 @@ fun UploadResultScreen(
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
+                            tint = White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate(PROFILE) {
+                            popUpTo(PROFILE) {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "Share",
                             tint = White
                         )
                     }

@@ -1,5 +1,6 @@
 package com.co77iri.imu_walking_pattern.ui.sensor
 
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.foundation.background
@@ -16,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.co77iri.imu_walking_pattern.PROFILE
 import com.co77iri.imu_walking_pattern.UPLOAD_RESULT
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -56,7 +60,18 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.xsens.dot.android.sdk.events.XsensDotData
 import com.xsens.dot.android.sdk.models.XsensDotDevice
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,6 +110,21 @@ fun SensorMeasureScreen(
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
+                            tint = White
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        navController.navigate(PROFILE) {
+                            popUpTo(PROFILE) {
+                                inclusive = true
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "Share",
                             tint = White
                         )
                     }
