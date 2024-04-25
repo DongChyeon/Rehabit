@@ -135,7 +135,13 @@ fun UploadResultScreen(
     val cadence = (totalSteps.toDouble() / (firstCSVData.getDataLength() / 60)) * 60
 
     val totalWalkingDistance = viewModel.calculateTotalWalkingDistance(leftData, rightData)
+    val leftWalkingDistance = viewModel.calculateWalkingDistance(leftData)
+    val rightWalkingDistance = viewModel.calculateWalkingDistance(rightData)
+
     val avgWalkingDistance: Double = totalWalkingDistance / totalSteps
+    val leftAvgWalkingDistance: Double = leftWalkingDistance / leftSteps
+    val rightAvgWalkingDistance: Double = rightWalkingDistance / rightSteps
+
     val avgDistanceDivHeight: Double = avgWalkingDistance / selectedProfile!!.height.toDouble()
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
@@ -629,11 +635,11 @@ fun UploadResultScreen(
                         leftSteps = leftSteps,
                         rightSteps = rightSteps,
                         strideLength = avgWalkingDistance,
-                        leftStrideLength = 0.0,
-                        rightStrideLength = 0.0,
+                        leftStrideLength = leftAvgWalkingDistance,
+                        rightStrideLength = rightAvgWalkingDistance,
                         stepLength = avgWalkingDistance * 2,
-                        leftStepLength = 0.0,
-                        rightStepLength = 0.0,
+                        leftStepLength = leftWalkingDistance,
+                        rightStepLength = rightWalkingDistance,
                         leftFile = leftFile,
                         rightFile = rightFile
                     )

@@ -112,8 +112,6 @@ class UploadResultViewModel @Inject constructor(
         }
     }
 
-    val allSquaresForBothFeet = mutableListOf<List<Double>>() // 왼발 오른발 저장
-
     fun updateCSVDataFromFile(filename: String): CSVData {
         val updateData = CSVData()
         val file = File(filename)
@@ -173,56 +171,30 @@ class UploadResultViewModel @Inject constructor(
         return totalSteps
     }
 
-    fun calculateTotalWalkingDistance(
-        leftCSVData: CSVData,
-        rightCSVData: CSVData
-    ): Double {
-        updateAllStepsSquaredSums(
-            leftCSVData, rightCSVData
-        ) // 먼저 모든 제곱 합을 업데이트합니다.
+    fun calculateWalkingDistance(csvData: CSVData): Double {
+        val peaks = csvData.myFindPeaks()
+        val steps = peaks.second
 
-        val calibrationSquaredSum = try {
-            allSquaresForBothFeet[0][0]
-        } catch (e: Exception) {
-            0.0
-        }   // 왼발의 첫 걸음 제곱 합으로 대체
+        // 걸음이 충분하지 않으면 0.0을 반환합니다.
+        if (steps.size < 2) return 0.0
 
         var totalDistance = 0.0
+        val calibrationSquaredSum = csvData.squaredSumBetweenPeaks(steps[0], steps[1])
 
-        allSquaresForBothFeet.forEach { squaredSumsForOneFoot ->
-            squaredSumsForOneFoot.forEach { squaredSum ->
-                totalDistance += calculateStrideLengthFromSquaredSum(squaredSum, calibrationSquaredSum)
-            }
+        for (i in 1 until steps.size) {
+            val squaredSum = csvData.squaredSumBetweenPeaks(steps[i - 1], steps[i])
+            totalDistance += calculateStrideLengthFromSquaredSum(squaredSum, calibrationSquaredSum)
         }
 
-        // 총 걸음 수에서 시작과 끝의 걸음을 제외하기 위해 2 걸음의 거리를 뺍니다.
-        val avgStrideLength = totalDistance / (getTotalStep(leftCSVData, rightCSVData) - 2)
-
-        return avgStrideLength * (getTotalStep(leftCSVData, rightCSVData) - 2)
+        return totalDistance
     }
 
-    private fun updateAllStepsSquaredSums(
-        leftCSVData: CSVData,
-        rightCSVData: CSVData
-    ) {
-        allSquaresForBothFeet.clear()
-
-        val leftData = getStepsSquaredSumsForCSVData(leftCSVData)
-        val rightData = getStepsSquaredSumsForCSVData(rightCSVData)
-        allSquaresForBothFeet.add(leftData)
-        allSquaresForBothFeet.add(rightData)
+    fun calculateTotalWalkingDistance(leftCSVData: CSVData, rightCSVData: CSVData): Double {
+        val leftDistance = calculateWalkingDistance(leftCSVData)
+        val rightDistance = calculateWalkingDistance(rightCSVData)
+        return leftDistance + rightDistance
     }
 
-    private fun getStepsSquaredSumsForCSVData(csvData: CSVData): List<Double> {
-        val squaredSums = mutableListOf<Double>()
-        val peaks = csvData.myFindPeaks()
-
-        for (i in 0 until peaks.second.size - 1) {
-            squaredSums.add(csvData.squaredSumBetweenPeaks(peaks.second[i], peaks.second[i + 1]))
-        }
-
-        return squaredSums
-    }
 
     // 첫번쨰 걸음값으로 캘리값 대체
     private fun calculateStrideLengthFromSquaredSum(squaredSum: Double, calibrationSquaredSum: Double): Double {

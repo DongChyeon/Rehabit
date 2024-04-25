@@ -152,7 +152,7 @@ class SensorViewModel @Inject constructor(
         }
 
         override fun onXsensDotDataChanged(address: String, data: XsensDotData) {
-            if( address == leftSensor.value!!.address ) {
+            if (address == leftSensor.value?.address) {
 //                _LeftSensorData.value = _LeftSensorData.value + data
                 val updatedData = _LeftSensorData.value.toMutableList()
                 if (updatedData.size >= 600) {
@@ -162,7 +162,7 @@ class SensorViewModel @Inject constructor(
                 _LeftSensorData.value = updatedData
             }
 
-            if( address == rightSensor.value!!.address ) {
+            if (address == rightSensor.value!!.address) {
 //                _RightSensorData.value = _RightSensorData.value + data
                 val updatedData = _RightSensorData.value.toMutableList()
                 if (updatedData.size >= 600) {
