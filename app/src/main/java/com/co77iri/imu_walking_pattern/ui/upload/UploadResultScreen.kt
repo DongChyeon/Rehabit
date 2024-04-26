@@ -138,14 +138,30 @@ fun UploadResultScreen(
     val leftWalkingDistance = viewModel.calculateWalkingDistance(leftData)
     val rightWalkingDistance = viewModel.calculateWalkingDistance(rightData)
 
-    val avgWalkingDistance: Double = totalWalkingDistance / totalSteps
-    val leftAvgWalkingDistance: Double = leftWalkingDistance / leftSteps
-    val rightAvgWalkingDistance: Double = rightWalkingDistance / rightSteps
+    val avgWalkingDistance: Double = try {
+        totalWalkingDistance / totalSteps
+    } catch (e: Exception) {
+        0.0
+    }
+    val leftAvgWalkingDistance: Double = try {
+        leftWalkingDistance / totalSteps
+    } catch (e: Exception) {
+        0.0
+    }
+    val rightAvgWalkingDistance: Double = try {
+        rightWalkingDistance / totalSteps
+    } catch (e: Exception) {
+        0.0
+    }
 
     val avgDistanceDivHeight: Double = avgWalkingDistance / selectedProfile!!.height.toDouble()
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
-    val gaitCycleDuration = totalTimeInSeconds / totalSteps.toDouble()
+    val gaitCycleDuration = try {
+        totalTimeInSeconds / totalSteps.toDouble()
+    } catch (e: Exception) {
+        0.0
+    }
 
     viewModel.updateTestDateAndTime(getCurrentDateTime())
     viewModel.updateTotalTimeInSeconds(totalTimeInSeconds)

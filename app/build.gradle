@@ -5,6 +5,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization"
     id "com.google.gms.google-services"
     id "kotlin-kapt"
+    id "com.google.firebase.crashlytics"
 }
 
 def localProperties = new Properties()
@@ -19,7 +20,7 @@ android {
         minSdk 26
         targetSdk 33
         versionCode 1
-        versionName "1.0"
+        versionName "1.0 (2)"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
