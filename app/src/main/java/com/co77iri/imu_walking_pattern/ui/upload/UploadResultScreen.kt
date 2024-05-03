@@ -138,19 +138,24 @@ fun UploadResultScreen(
     val leftWalkingDistance = viewModel.calculateWalkingDistance(leftData)
     val rightWalkingDistance = viewModel.calculateWalkingDistance(rightData)
 
-    val avgWalkingDistance: Double = try {
-        totalWalkingDistance / totalSteps
-    } catch (e: Exception) {
+    val avgWalkingDistance: Double = if (totalSteps != 0) {
+        val result = totalWalkingDistance / totalSteps
+        if (result.isNaN()) 0.0 else result
+    } else {
         0.0
     }
-    val leftAvgWalkingDistance: Double = try {
-        leftWalkingDistance / totalSteps
-    } catch (e: Exception) {
+
+    val leftAvgWalkingDistance: Double = if (totalSteps != 0) {
+        val result = leftWalkingDistance / totalSteps
+        if (result.isNaN()) 0.0 else result
+    } else {
         0.0
     }
-    val rightAvgWalkingDistance: Double = try {
-        rightWalkingDistance / totalSteps
-    } catch (e: Exception) {
+
+    val rightAvgWalkingDistance: Double = if (totalSteps != 0) {
+        val result = rightWalkingDistance / totalSteps
+        if (result.isNaN()) 0.0 else result
+    } else {
         0.0
     }
 
@@ -158,7 +163,12 @@ fun UploadResultScreen(
 
     val avgSpeed = totalWalkingDistance / totalTimeInSeconds
     val gaitCycleDuration = try {
-        totalTimeInSeconds / totalSteps.toDouble()
+        val result = totalTimeInSeconds / totalSteps.toDouble()
+        if (result.isInfinite()) {
+            0.0
+        } else {
+            result
+        }
     } catch (e: Exception) {
         0.0
     }

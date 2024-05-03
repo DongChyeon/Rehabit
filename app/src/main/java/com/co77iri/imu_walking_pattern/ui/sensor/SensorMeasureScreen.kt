@@ -34,6 +34,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -88,8 +89,12 @@ fun SensorMeasureScreen(
     val leftSensorData by sensorViewModel.LeftSensorData.collectAsState()
     val rightSensorData by sensorViewModel.RightSensorData.collectAsState()
 
-    LaunchedEffect(true) {
+    DisposableEffect(true) {
         sensorViewModel.initSensorData()
+        onDispose {
+            sensorViewModel.initSensorData()
+            sensorViewModel.setMeasurement(sensorViewModel.isMeasuring.value)
+        }
     }
 
     Scaffold(

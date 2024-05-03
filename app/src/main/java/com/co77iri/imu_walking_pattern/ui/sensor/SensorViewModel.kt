@@ -44,7 +44,6 @@ class SensorViewModel @Inject constructor(
     var syncStatus: MutableState<Int> = mutableStateOf(0) // 0 Not started , 1 in-progress, 2 done
     var syncProgress: MutableState<Int> = mutableStateOf(0)
 
-//    val connectionChangedDevice = MutableLiveData<XsensDotDevice>()
     val connectionChangedDevice: MutableState<XsensDotDevice?> = mutableStateOf(null)
     val tagChangedDevice = MutableLiveData<XsensDotDevice>()
 
@@ -61,16 +60,11 @@ class SensorViewModel @Inject constructor(
     var leftSensorFileName: String? = null
     var rightSensorFileName: String? = null
 
-    // For MPAndroidChart
-//    private val _sensorData = MutableStateFlow<List<XsensDotData>>(emptyList())
-//    val sensorData: StateFlow<List<XsensDotData>> = _sensorData
-
     private val _LeftSensorData = MutableStateFlow<List<XsensDotData>>(emptyList())
     val LeftSensorData: StateFlow<List<XsensDotData>> = _LeftSensorData
 
     private val _RightSensorData = MutableStateFlow<List<XsensDotData>>(emptyList())
     val RightSensorData: StateFlow<List<XsensDotData>> = _RightSensorData
-
 
 
     private var dotSyncCallback = object : XsensDotSyncCallback {
@@ -80,7 +74,6 @@ class SensorViewModel @Inject constructor(
         }
 
         override fun onSyncingProgress(progress: Int, requestCode: Int) {
-//            Log.d(TAG, "progress: $progress, requestCode: $requestCode")
             syncProgress.value = progress
         }
 
@@ -140,20 +133,10 @@ class SensorViewModel @Inject constructor(
         override fun onXsensDotBatteryChanged(address: String, status: Int, percentage: Int) {
             // This callback function will be triggered in the connection precess.
             Log.i(TAG, "onXsensDotBatteryChanged() - address = $address, status = $status, percentage = $percentage")
-
-            // The default value of status and percentage is -1.
-//            if (status != -1 && percentage != -1) {
-                // Use callback function instead of LiveData to notify the battery information.
-                // Because when user removes the USB cable from housing, this function will be triggered 5 times.
-                // Use LiveData will lose some notification.
-                // TODO
-//                if (mBatteryChangeInterface != null) mBatteryChangeInterface!!.onBatteryChanged(address, status, percentage)
-//            }
         }
 
         override fun onXsensDotDataChanged(address: String, data: XsensDotData) {
             if (address == leftSensor.value?.address) {
-//                _LeftSensorData.value = _LeftSensorData.value + data
                 val updatedData = _LeftSensorData.value.toMutableList()
                 if (updatedData.size >= 600) {
                     updatedData.removeAt(0)  // 맨 처음 데이터 삭제
@@ -163,7 +146,6 @@ class SensorViewModel @Inject constructor(
             }
 
             if (address == rightSensor.value!!.address) {
-//                _RightSensorData.value = _RightSensorData.value + data
                 val updatedData = _RightSensorData.value.toMutableList()
                 if (updatedData.size >= 600) {
                     updatedData.removeAt(0)  // 맨 처음 데이터 삭제
@@ -171,11 +153,6 @@ class SensorViewModel @Inject constructor(
                 updatedData.add(data)  // 새로운 데이터 추가
                 _RightSensorData.value = updatedData
             }
-
-//            if (freeAcc != null && freeAcc.size >= 3) {
-//                val freeAccStr = "FreeAcc_X:${freeAcc[0]}, FreeAcc_Y:${freeAcc[1]}, FreeAcc_Z:${freeAcc[2]}"
-//                Log.i(TAG, "Addr:$address, $freeAccStr")
-//            }
 
             var isExist = false
             for( map in dataList) {
