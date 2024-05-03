@@ -10,11 +10,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -34,6 +36,7 @@ import com.co77iri.imu_walking_pattern.ui.upload.UploadResultScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectScreen
 import com.co77iri.imu_walking_pattern.ui.csv.CsvSelectViewModel
 import com.co77iri.imu_walking_pattern.ui.profile.profileGraph
+import com.co77iri.imu_walking_pattern.ui.sensor.SensorContract
 import com.co77iri.imu_walking_pattern.ui.sensor.SensorMeasureScreen
 import com.co77iri.imu_walking_pattern.ui.sensor.SensorViewModel
 import com.co77iri.imu_walking_pattern.ui.sensor.sensorGraph
@@ -153,6 +156,21 @@ fun NavHost() {
     val navController = rememberNavController()
 
     val sensorViewModel: SensorViewModel = hiltViewModel()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(true) {
+        sensorViewModel.effect.collect { effect ->
+            when (effect) {
+                is SensorContract.Effect.NavigateTo -> {
+                    navController.navigate(effect.destination, effect.navOptions)
+                }
+                is SensorContract.Effect.ShowSnackBar -> {
+                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     NavHost(navController, startDestination = SENSOR_ROUTE) { // 테스트
         profileGraph(navController = navController)

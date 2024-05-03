@@ -14,6 +14,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.navigation.navOptions
+import com.co77iri.imu_walking_pattern.BaseViewModel
+import com.co77iri.imu_walking_pattern.PROFILE
+import com.co77iri.imu_walking_pattern.SENSOR_SETTING
+import com.co77iri.imu_walking_pattern.ui.upload.UploadResultContract
 import com.xsens.dot.android.sdk.BuildConfig
 import com.xsens.dot.android.sdk.events.XsensDotData
 import com.xsens.dot.android.sdk.interfaces.XsensDotDeviceCallback
@@ -37,7 +42,9 @@ import javax.inject.Inject
 @SuppressLint("MutableCollectionMutableState")
 class SensorViewModel @Inject constructor(
     @ApplicationContext private val context: Context
-) : ViewModel() {
+) : BaseViewModel<SensorContract.State, SensorContract.Event, SensorContract.Effect>(
+    initialState = SensorContract.State()
+) {
     var sensorList by mutableStateOf<SnapshotStateList<XsensDotDevice>>(mutableStateListOf())
     val isMeasuring: MutableState<Boolean> = mutableStateOf(false)
 
@@ -95,19 +102,31 @@ class SensorViewModel @Inject constructor(
     private var dotDeviceCallback = object : XsensDotDeviceCallback {
         override fun onXsensDotConnectionChanged(address: String, state: Int) {
             val device = getSensor(address)
-//            if( device != null ) connectionChangedDevice.postValue(device)
             if( device != null ) connectionChangedDevice.value = device
 
             when( state ) {
-                XsensDotDevice.CONN_STATE_DISCONNECTED -> synchronized(this) { removeDevice(address)}
+                XsensDotDevice.CONN_STATE_DISCONNECTED -> {
+                    Log.d(TAG, "Sensor disconnected ... ${device?.address}")
+
+                    removeDevice(address)
+                    postEffect(SensorContract.Effect.ShowSnackBar("기기를 다시 연결해주세요"))
+                    postEffect(SensorContract.Effect.NavigateTo(
+                        destination = SENSOR_SETTING,
+                        navOptions = navOptions {
+                            popUpTo(SENSOR_SETTING) {
+                                inclusive = true
+                            }
+                        }
+                    ))
+                }
                 XsensDotDevice.CONN_STATE_CONNECTING -> {
-//                    Log.d(TAG, "Sensor connecting ... ${device?.address}")
+                    Log.d(TAG, "Sensor connecting ... ${device?.address}")
                 }
                 XsensDotDevice.CONN_STATE_CONNECTED -> {
-//                    Log.d(TAG, "sensor list... ${sensorList}")
+                    Log.d(TAG, "sensor list... ${sensorList}")
                                     }
                 XsensDotDevice.CONN_STATE_RECONNECTING -> {
-//                    Log.d(TAG, "Sensor re-connecting ... ${device?.address}")
+                    Log.d(TAG, "Sensor re-connecting ... ${device?.address}")
                 }
             }
         }
@@ -446,5 +465,9 @@ class SensorViewModel @Inject constructor(
         private val TAG = SensorViewModel::class.java.simpleName
         private val LOCKER = Any()
         private const val SYNCING_REQUEST_CODE = 1001
+    }
+
+    override fun reduceState(event: SensorContract.Event) {
+
     }
 }
